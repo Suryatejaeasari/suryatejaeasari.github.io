@@ -7,8 +7,8 @@ image:
   path: assets/attachments/fraud_detection.png
 ---
 
-**Published in:** [Journal of Information and Optimization Sciences (JIOS), Taru Publications](http://dx.doi.org/10.47974/JIOS-1932)  
-**DOI:** [10.47974/JIOS-1932](http://dx.doi.org/10.47974/JIOS-1932)  
+**Published in:** [Journal of Information and Optimization Sciences (JIOS), Taru Publications](https://www.tarupublications.com/doi/10.47974/JIOS-1932)  
+**DOI:** [10.47974/JIOS-1932](https://www.tarupublications.com/doi/10.47974/JIOS-1932)  
 
 ## Overview  
 This project implements a **hybrid fraud detection system** that integrates:  
