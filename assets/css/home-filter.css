@@ -63,7 +63,6 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 
 
 
-
 /* === Project Links (Repo / Demo / PDF / Paper) === */
 
 .project-links{
@@ -112,8 +111,3 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 .project-link i{
   font-size: 1rem;
 }
-
-
-
-
-
