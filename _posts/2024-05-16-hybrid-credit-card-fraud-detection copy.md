@@ -7,10 +7,19 @@ image:
   path: assets/attachments/fraud_detection.png
 
 type: publication
+links:
+  - label: GitHub
+    icon: fab fa-github
+    url: https://github.com/Suryatejaeasari/Hybrid-Credit-Card-Fraud-Detection
+
+  - label: Paper
+    icon: fas fa-file-pdf
+    url: https://tarupublication.s3.ap-south-1.amazonaws.com/articles/jios-1932.pdf
 ---
 
 **Published in:** [Journal of Information and Optimization Sciences (JIOS), Taru Publications](https://www.tarupublications.com/doi/10.47974/JIOS-1932)  
 **DOI:** [10.47974/JIOS-1932](https://www.tarupublications.com/doi/10.47974/JIOS-1932)  
+**Index:** Web of Science
 
 ## Overview  
 This project implements a **hybrid fraud detection system** that integrates:  

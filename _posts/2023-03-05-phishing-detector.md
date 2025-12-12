@@ -5,6 +5,10 @@ categories: [Projects]
 tags: [phishing, threat-detection, machine-learning]     # TAG names should always be lowercase
 image:
   path: assets/attachments/phishing.png
+links:
+  - label: GitHub
+    icon: fab fa-github
+    url: https://github.com/Suryatejaeasari/Phishing-Detector
 ---
 ## Overview  
 Phishing Detector is a **machine learning-powered web application** designed to detect phishing links. Built using **Django**, the platform allows users to check URLs for potential phishing threats in real time. The ML model is trained on phishing datasets to distinguish between **malicious and legitimate links** effectively.  
