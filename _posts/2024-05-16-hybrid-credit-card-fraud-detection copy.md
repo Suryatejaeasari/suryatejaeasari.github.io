@@ -5,6 +5,8 @@ categories: [Projects]
 tags: [machine-learning, neural-networks, fraud-detection, python, rule-based-system]     # TAG names should always be lowercase
 image:
   path: assets/attachments/fraud_detection.png
+
+type: publication
 ---
 
 **Published in:** [Journal of Information and Optimization Sciences (JIOS), Taru Publications](https://www.tarupublications.com/doi/10.47974/JIOS-1932)  

@@ -1,0 +1,58 @@
+/* Home filter – future-proof, Chirpy-safe */
+
+#home-filter {
+  margin-top: .25rem;
+}
+
+/* Design tokens */
+:root {
+  --hf-bg: rgba(0, 0, 0, 0.03);
+  --hf-bg-hover: rgba(0, 0, 0, 0.06);
+  --hf-border: rgba(0, 0, 0, 0.10);
+  --hf-border-hover: rgba(0, 0, 0, 0.18);
+  --hf-text: var(--text-color);
+  --hf-active-bg: rgba(0, 0, 0, 0.07);
+  --hf-active-border: rgba(0, 0, 0, 0.30);
+}
+
+/* Dark mode support */
+html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
+  --hf-bg: rgba(255, 255, 255, 0.04);
+  --hf-bg-hover: rgba(255, 255, 255, 0.08);
+  --hf-border: rgba(255, 255, 255, 0.14);
+  --hf-border-hover: rgba(255, 255, 255, 0.25);
+  --hf-active-bg: rgba(255, 255, 255, 0.10);
+  --hf-active-border: rgba(255, 255, 255, 0.35);
+}
+
+#home-filter .btn {
+  border-radius: 999px;
+  padding: .35rem .75rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+
+  background: var(--hf-bg);
+  border: 1px solid var(--hf-border);
+  color: var(--hf-text);
+
+  transition: transform .12s ease,
+              background .12s ease,
+              border-color .12s ease;
+}
+
+#home-filter .btn:hover {
+  transform: translateY(-1px);
+  background: var(--hf-bg-hover);
+  border-color: var(--hf-border-hover);
+}
+
+#home-filter .btn.active {
+  background: var(--hf-active-bg);
+  border-color: var(--hf-active-border);
+}
+
+/* Accessibility */
+#home-filter .btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
