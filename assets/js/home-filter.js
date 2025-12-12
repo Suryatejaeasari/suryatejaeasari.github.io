@@ -31,7 +31,8 @@
 
     const hash =
       raw === "cat:projects" ? "projects" :
-      raw === "type:publication" ? "publications" : "";
+      raw === "type:publication" ? "publications" : 
+      raw === "type:case-study" ? "case studies" : "";
     window.location.hash = hash ? `#${hash}` : "";
   };
 
@@ -39,6 +40,7 @@
     const h = location.hash.replace("#", "");
     if (h === "projects") return "cat:projects";
     if (h === "publications") return "type:publication";
+    if (h === "case studies") return "type:case-study";
     return "all";
   };
 
