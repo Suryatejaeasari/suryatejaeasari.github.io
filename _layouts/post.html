@@ -8,6 +8,7 @@ tail_includes:
 script_includes:
   - comment
 ---
+<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=3' | relative_url }}">
 
 {% include lang.html %}
 
@@ -96,15 +97,17 @@ script_includes:
       </div>
     </div>
     {% if page.links %}
-    <div class="post-repo-link my-4">
-      {% for l in page.links %}
-        <a href="{{ l.url | relative_url }}"
-          class="btn btn-outline-secondary"
-          target="_blank" rel="noopener noreferrer">
-          <i class="{{ l.icon }}"></i> {{ l.label }}
-        </a>
-      {% endfor %}
-    </div>
+  <div class="post-repo-link my-4">
+    {% for l in page.links %}
+      <a href="{{ l.url | relative_url }}"
+         class="btn btn-outline-secondary"
+         target="_blank" rel="noopener noreferrer">
+        <i class="{{ l.icon }}"></i> {{ l.label }}
+      </a>
+    {% endfor %}
+  </div>
+
+
 
 {% endif %}
 

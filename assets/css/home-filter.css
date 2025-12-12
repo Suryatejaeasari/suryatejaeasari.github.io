@@ -111,3 +111,25 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 .project-link i{
   font-size: 1rem;
 }
+
+/* Links button bar (keep Chirpy/Bootstrap button style, fix spacing reliably) */
+.post-repo-link{
+  margin: 1.25rem 0 1.5rem;   /* top + bottom gap always */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* spacing between buttons (works everywhere, no bootstrap gap required) */
+.post-repo-link .btn{
+  margin: 0 .6rem .6rem 0;    /* right + bottom */
+  border-radius: 999px;       /* keep pill look */
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;                /* icon-text spacing */
+}
+
+/* optional: slightly nicer hover without changing theme too much */
+.post-repo-link .btn:hover{
+  transform: translateY(-1px);
+}
