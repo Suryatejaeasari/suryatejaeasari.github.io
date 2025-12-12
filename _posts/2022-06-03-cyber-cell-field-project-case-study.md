@@ -1,7 +1,7 @@
 ---
 title: "Case Study: Safe Online Practices & Cyber Crime Trends (Cyber Cell, L.B. Nagar)"
 date: 2022-06-03
-type: [case-study, publication]
+type: [case-study]
 categories: [Projects]
 tags:
   - cybercrime
