@@ -1,8 +1,12 @@
 /* Home filter – future-proof, Chirpy-safe */
 
-#home-filter {
-  margin-top: .25rem;
+#home-filter{
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;      /* spacing between buttons */
+  margin-bottom: 1rem;
 }
+
 
 /* Design tokens */
 :root {
