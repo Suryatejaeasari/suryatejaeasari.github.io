@@ -66,7 +66,7 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 /* === Project Links (Repo / Demo / PDF / Paper) === */
 
 .project-links{
-  margin: 1.25rem 0 1.5rem;
+  margin: 1.25rem 0 .5rem;
   display: flex;
   flex-wrap: wrap;
   gap: .75rem;
@@ -114,22 +114,28 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 
 /* Links button bar (keep Chirpy/Bootstrap button style, fix spacing reliably) */
 .post-repo-link{
-  margin: 1.25rem 0 1.5rem;   /* top + bottom gap always */
+  margin: .15rem 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
 }
 
-/* spacing between buttons (works everywhere, no bootstrap gap required) */
 .post-repo-link .btn{
-  margin: 0 .6rem .6rem 0;    /* right + bottom */
-  border-radius: 999px;       /* keep pill look */
+  margin: 0 .2rem .12rem 0;   /* right + bottom (very small) */
+  padding: .2rem .55rem;      /* optional: tighter button */
+  border-radius: 999px;
   display: inline-flex;
   align-items: center;
-  gap: .45rem;                /* icon-text spacing */
+  gap: .3rem;
 }
 
-/* optional: slightly nicer hover without changing theme too much */
 .post-repo-link .btn:hover{
   transform: translateY(-1px);
 }
+
+
+
+.post-repo-link .btn{
+  margin: 0.5rem .6rem 0rem 0;
+}
+
