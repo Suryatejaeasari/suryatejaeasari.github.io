@@ -535,7 +535,6 @@ ExecStart=/usr/sbin/ip route replace 10.10.10.40/32 dev macvlan-shim
 
 [Install]
 WantedBy=multi-user.target
-Then enable it:
 ```
 Enable and start the service:
 
