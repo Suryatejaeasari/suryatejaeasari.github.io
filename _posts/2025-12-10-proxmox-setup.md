@@ -4,7 +4,7 @@ date: 2025-12-10 12:00:00 -500
 categories: [Projects]
 tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
 image:
-  path: assets/attachments/synckage.png
+  path: assets/attachments/proxmox-setup.png
 ---
 
 Self-hosting was something I wanted to build properly instead of relying only on cloud platforms. The goal of this setup was to create a solid local infrastructure using Proxmox, run services inside a dedicated Ubuntu VM with Docker, and securely expose selected services using Cloudflare Tunnel.
