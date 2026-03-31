@@ -1,5 +1,5 @@
 ---
-title: Proxmox + Docker Setup for Self-Hosted Infrastructure
+title: Proxmox & Docker Setup for Self-Hosted Infrastructure
 date: 2025-12-10 12:00:00 -500
 categories: [Projects]
 tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
