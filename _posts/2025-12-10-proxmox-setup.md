@@ -30,9 +30,17 @@ The services deployed in this setup are:
 
 ## 1. Proxmox Setup
 
-The first step was installing Proxmox VE on the server and configuring the basic management network during installation.
+Proxmox VE was installed directly on the server using the official ISO.
 
-After installation, Proxmox can be accessed from the browser using:
+Basic installation steps:
+
+- Download the Proxmox VE ISO from the official website
+- Create a bootable USB drive
+- Boot the system using the USB and launch the installer
+- Select the target disk and configure storage
+- Set hostname, password, and management network (IP, gateway, DNS)
+
+After installation completes, access the Proxmox web interface using:
 
 ```text
 https://<proxmox-ip>:8006
