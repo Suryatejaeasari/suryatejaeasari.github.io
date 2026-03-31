@@ -508,6 +508,43 @@ docker network connect --ip 10.10.10.40 dockernet mariadb
 
 A macvlan shim can also be created using a systemd service so the host can communicate with the macvlan containers.
 
+Create a systemd service:
+
+```bash
+sudo nano /etc/systemd/system/macvlan-shim.service
+```
+Add the following content:
+```text
+[Unit]
+Description=Create macvlan shim and routes for Docker macvlan containers
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+ExecStart=/bin/sh -c '/usr/sbin/ip link add macvlan-shim link enp6s19 type macvlan mode bridge || true'
+ExecStart=/bin/sh -c '/usr/sbin/ip addr add 10.10.10.3/24 dev macvlan-shim || true'
+ExecStart=/usr/sbin/ip link set macvlan-shim up
+
+ExecStart=/usr/sbin/ip route replace 10.10.10.10/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.20/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.30/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.40/32 dev macvlan-shim
+
+[Install]
+WantedBy=multi-user.target
+Then enable it:
+```
+Enable and start the service:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable macvlan-shim.service
+sudo systemctl start macvlan-shim.service
+```
+
 ## Final Result
 
 At the end of this setup, the environment provides:
