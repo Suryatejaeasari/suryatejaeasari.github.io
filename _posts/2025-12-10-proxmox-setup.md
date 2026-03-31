@@ -34,9 +34,9 @@ The first step was installing Proxmox VE on the server and configuring the basic
 
 After installation, Proxmox can be accessed from the browser using:
 
-```bash
+```text
 https://<proxmox-ip>:8006
-````
+```
 
 Once the web interface is available, the enterprise repositories should be disabled and replaced with the no-subscription repository.
 
@@ -521,5 +521,3 @@ At the end of this setup, the environment provides:
 * Cloudflare Tunnel for secure external access
 * Optional static container networking with macvlan
 
-
-```
