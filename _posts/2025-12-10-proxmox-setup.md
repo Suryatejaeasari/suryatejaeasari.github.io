@@ -9,7 +9,7 @@ image:
 
 Self-hosting was something I wanted to build properly instead of relying only on cloud platforms. The goal of this setup was to create a solid local infrastructure using Proxmox, run services inside a dedicated Ubuntu VM with Docker, and securely expose selected services using Cloudflare Tunnel.
 
-This setup currently runs WordPress, MariaDB, Portainer, and Nginx Proxy Manager, and it also serves as the base for future lab expansion.
+This setup is used to host a personal website and acts as the foundation for a larger cybersecurity lab.
 
 ## Overview
 
@@ -19,9 +19,9 @@ The overall setup consists of:
 - **Ubuntu Server VM** as the Docker host
 - **ZFS storage** for allocating larger VM disks
 - **Docker containers** for service deployment
-- **Cloudflare Tunnel** for external access without port forwarding
+- **Cloudflare Zero Trust (Tunnel + Access policies)** for secure external access
 
-The services deployed in this setup are:
+Services deployed:
 
 - WordPress
 - MariaDB
@@ -474,7 +474,26 @@ sudo systemctl start cloudflared
 
 This makes the selected services accessible through Cloudflare-managed hostnames.
 
-## 12. Optional: macvlan Networking for Static Container IPs
+## 12. Configuring Cloudflare Zero Trust Access
+
+After setting up the Cloudflare Tunnel, Zero Trust Access policies were configured to control access to exposed services.
+
+In the Cloudflare dashboard:
+
+- Go to **Zero Trust -> Access -> Applications**
+- Create a new application
+- Select **Self-hosted**
+- Enter the domain configured for the service
+
+Configure access policies:
+
+- Define allowed users (email-based or identity provider)
+- Set authentication rules (one-time PIN or SSO)
+- Restrict access based on identity instead of network exposure
+
+This ensures that even though services are exposed through Cloudflare Tunnel, access is protected using identity-based authentication.
+
+## 13. Optional: macvlan Networking for Static Container IPs
 
 A separate internal network was later created to give containers their own fixed IP addresses.
 
@@ -557,6 +576,26 @@ sudo systemctl enable macvlan-shim.service
 sudo systemctl start macvlan-shim.service
 ```
 
+## 14. Remote Access using Tailscale
+
+Tailscale was used to securely access internal services such as the Proxmox interface from external devices without exposing them publicly.
+
+Install Tailscale on the Docker host VM:
+
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up --advertise-routes=10.10.10.0/24
+```
+
+After running the command, a login URL will be generated. Open the link in a browser and authenticate the device.
+
+Once authenticated:
+
+- Navigate to the Tailscale admin console
+- Approve the advertised route 10.10.10.0/24
+
+This allows secure access to the internal network, enabling connectivity to services like Proxmox from mobile or remote systems.
+
 ## Final Result
 
 At the end of this setup, the environment provides:
@@ -567,6 +606,7 @@ At the end of this setup, the environment provides:
 * Portainer for container management
 * Nginx Proxy Manager for reverse proxying
 * WordPress and MariaDB running locally
-* Cloudflare Tunnel for secure external access
+* Cloudflare Zero Trust (Tunnel + Access policies) for secure external access
 * Optional static container networking with macvlan
+* Tailscale for secure private access to internal services
 
