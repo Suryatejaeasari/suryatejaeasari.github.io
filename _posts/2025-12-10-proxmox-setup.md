@@ -1,7 +1,6 @@
 ---
 title: Proxmox-Based Self-Hosted Infrastructure
 date: 2025-12-10 12:00:00 +0530
-last_modified_at: 2026-04-01 12:00:00 +0530
 categories: [Notes]
 tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
 image:
@@ -10,7 +9,7 @@ image:
 
 Self-hosting was something I wanted to build properly instead of relying only on cloud platforms. The goal of this setup was to create a solid local infrastructure using Proxmox, run services inside a dedicated Ubuntu VM with Docker, and securely expose selected services using Cloudflare Tunnel.
 
-This setup is used to host a personal website and acts as the foundation for a larger cybersecurity lab.
+This architecture separates infrastructure, services, and access layers to improve scalability, isolation, and security.
 
 ## Overview
 
