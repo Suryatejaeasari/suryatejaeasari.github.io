@@ -1,7 +1,7 @@
 ---
 title: Proxmox-Based Self-Hosted Infrastructure
 date: 2025-12-10 12:00:00 +0530
-categories: [Notes]
+categories: [Projects, Notes]
 tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
 image:
   path: assets/attachments/proxmox-setup.png
