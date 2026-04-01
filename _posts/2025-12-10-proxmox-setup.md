@@ -395,7 +395,7 @@ Example entry:
 
 This allows the site to be accessed using a custom local name before exposing it externally.
 
-## 11. Installing Cloudflare Tunnel
+## 11. Cloudflare Tunnel Setup
 
 Cloudflare Tunnel was used to expose local services securely without port forwarding and without requiring a static public IP.
 
@@ -491,7 +491,7 @@ Configure access policies:
 - Set authentication rules (one-time PIN or SSO)
 - Restrict access based on identity instead of network exposure
 
-This ensures that even though services are exposed through Cloudflare Tunnel, access is protected using identity-based authentication.
+This adds an additional security layer on top of the tunnel by enforcing authentication before allowing access to internal services.
 
 ## 13. Optional: macvlan Networking for Static Container IPs
 
@@ -594,7 +594,9 @@ Once authenticated:
 - Navigate to the Tailscale admin console
 - Approve the advertised route 10.10.10.0/24
 
-This allows secure access to the internal network, enabling connectivity to services like Proxmox from mobile or remote systems.
+This allows secure access to the internal network, enabling connectivity to services like Proxmox App from mobile or remote systems.
+
+While Cloudflare Tunnel is used to expose selected services publicly, Tailscale is used for secure private access to internal services.
 
 ## Final Result
 
