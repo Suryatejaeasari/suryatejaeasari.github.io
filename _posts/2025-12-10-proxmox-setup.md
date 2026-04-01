@@ -45,6 +45,7 @@ After installation completes, access the Proxmox web interface using:
 ```text
 https://<proxmox-ip>:8006
 ```
+![Proxmox VM Dashboard](/assets/attachments/proxmox-dashboard.png)
 
 Once the web interface is available, the enterprise repositories should be disabled and replaced with the no-subscription repository.
 
@@ -274,6 +275,8 @@ Access Portainer at:
 https://192.168.1.60:9443
 ```
 
+![Portainer Dashboard](/assets/attachments/portainer-dashboard.png)
+
 From there, the local Docker environment can be managed through the browser.
 
 ## 8. Deploying Nginx Proxy Manager
@@ -313,6 +316,8 @@ Once deployed, the Nginx Proxy Manager admin interface is available at:
 ```bash
 http://192.168.1.60:81
 ```
+
+![Nginx Proxy Manager Dashboard](/assets/attachments/npm-dashboard.png)
 
 This is used later to create reverse proxy entries for services.
 
