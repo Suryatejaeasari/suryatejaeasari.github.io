@@ -1,6 +1,7 @@
 ---
 title: Proxmox-Based Self-Hosted Infrastructure
-date: 2025-12-10 12:00:00 -500
+date: 2025-12-10 12:00:00 +0530
+last_modified_at: 2026-04-01 12:00:00 +0530
 categories: [Notes]
 tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
 image:
@@ -472,7 +473,7 @@ sudo systemctl enable cloudflared
 sudo systemctl start cloudflared
 ```
 
-This makes the selected services accessible through Cloudflare-managed hostnames.
+This makes selected services accessible through Cloudflare-managed hostnames without exposing the local network directly.
 
 ## 12. Configuring Cloudflare Zero Trust Access
 
@@ -592,11 +593,11 @@ After running the command, a login URL will be generated. Open the link in a bro
 Once authenticated:
 
 - Navigate to the Tailscale admin console
-- Approve the advertised route 10.10.10.0/24
+- Approve the advertised route `10.10.10.0/24`
 
-This allows secure access to the internal network, enabling connectivity to services like Proxmox App from mobile or remote systems.
+This enables routing to the internal macvlan network through the Tailscale node and provides secure access to internal services such as the Proxmox interface from mobile or remote systems.
 
-While Cloudflare Tunnel is used to expose selected services publicly, Tailscale is used for secure private access to internal services.
+Cloudflare Tunnel is used for exposing selected services publicly, while Tailscale is used for secure private access to internal services.
 
 ## Final Result
 
