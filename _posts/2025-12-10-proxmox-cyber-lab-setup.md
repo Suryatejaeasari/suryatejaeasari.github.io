@@ -25,6 +25,8 @@ The overall setup consists of:
 
 This architecture mirrors real enterprise environments where production systems, monitoring infrastructure, and high-risk analysis zones are strictly separated.
 
+![Proxmox Server](/assets/attachments/proxmox-lab.png)
+
 ## Architecture Diagram
 
 ![Cyber Lab Architecture](/assets/attachments/cyber-lab-architecture.png)
