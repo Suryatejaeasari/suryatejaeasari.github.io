@@ -1,5 +1,5 @@
 ---
-title: Proxmox-Based Cybersecurity Lab ":" Active Directory, Monitoring & Malware Analysis
+title: Proxmox-Based Cybersecurity Lab :' Active Directory, Monitoring & Malware Analysis
 date: 2026-04-05 12:00:00 +0530
 categories: [Projects]
 tags: [proxmox, active-directory, wazuh, suricata, kali, remnux, homelab, detection]
