@@ -7,15 +7,10 @@ image:
   path: assets/attachments/cyber-lab.png
 ---
 
-Instead of building a flat lab with random machines, this setup was designed to simulate a structured internal environment with clear separation between targets, monitoring systems, and malware analysis zones.
+Most cybersecurity labs focus on isolated machines and exploitation practice.  
+This setup was designed differently — to simulate a structured internal environment with segmentation, monitoring, and controlled attack paths.
 
-The objective was not just to practice attacks, but to understand how systems are designed, how attackers move, and how defenders observe and detect that activity.
-
-This lab focuses on both **offensive and defensive perspectives**.
-
-It was built to move beyond basic cybersecurity practice environments and understand how real-world systems are structured, monitored, and attacked.
-
-Instead of focusing only on exploitation, the goal was to build a controlled environment that reflects both attacker and defender perspectives.
+The objective was to move beyond basic attack labs and build a controlled environment that reflects both attacker and defender perspectives, focusing on how systems are designed, monitored, and attacked.
 
 ## Overview
 
@@ -27,6 +22,8 @@ The overall setup consists of:
 - **Monitoring stack (Wazuh + Suricata + Sysmon)**
 - **Dedicated attacker VM (Kali)**
 - **Isolated malware analysis environment (MAL01 + REMnux)**
+
+This architecture mirrors real enterprise environments where production systems, monitoring infrastructure, and high-risk analysis zones are strictly separated.
 
 ## Architecture Diagram
 
@@ -188,6 +185,8 @@ MON01 configuration:
 
 This transforms the lab into a **detection environment**, not just an attack lab.
 
+This design ensures monitoring does not become a pivot point, maintaining visibility without introducing risk.
+
 ## 9. Malware Detonation Environment (MAL01)
 
 A dedicated Windows VM for malware analysis:
@@ -209,6 +208,8 @@ Security measures:
 - Windows Defender disabled (controlled testing)
 - No external network access
 - Snapshot created for rollback
+
+The malware network is intentionally isolated with no routing or external access to prevent unintended spread or contamination.
 
 ## 10. REMnux Analysis VM
 
