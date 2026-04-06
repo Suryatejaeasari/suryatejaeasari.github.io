@@ -7,14 +7,13 @@ image:
   path: assets/attachments/cyber-lab.png
 ---
 
-Most cybersecurity labs focus on isolated machines and exploitation practice.  
-This setup was designed differently — to simulate a structured internal environment with segmentation, monitoring, and controlled attack paths.
+Most cybersecurity labs focus on isolated machines and basic exploitation. This lab was designed to simulate a structured internal environment with segmentation, monitoring, and controlled attack paths, closer to how real enterprise systems operate.
 
-The objective was to move beyond basic attack labs and build a controlled environment that reflects both attacker and defender perspectives, focusing on how systems are designed, monitored, and attacked.
+The goal was to move beyond standalone attack setups and build a system that reflects both attacker and defender perspectives, emphasizing how infrastructure is designed, monitored, and secured.
 
 ## Overview
 
-The overall setup consists of:
+The lab consists of:
 
 - **Proxmox VE** as the hypervisor
 - **Segmented internal networks** for isolation
@@ -23,7 +22,7 @@ The overall setup consists of:
 - **Dedicated attacker VM (Kali)**
 - **Isolated malware analysis environment (MAL01 + REMnux)**
 
-This architecture mirrors real enterprise environments where production systems, monitoring infrastructure, and high-risk analysis zones are strictly separated.
+This architecture mirrors real environments where production systems, monitoring infrastructure, and high-risk analysis zones are strictly separated.
 
 ![Proxmox Server](/assets/attachments/proxmox-lab.png)
 
@@ -33,11 +32,11 @@ This architecture mirrors real enterprise environments where production systems,
 
 ## 1. Lab Architecture Design
 
-The architecture was intentionally segmented into three zones:
+The lab is segmented into three isolated zones:
 
 ### Victim Network (vmbr2)
 - Subnet: `172.16.10.0/24`
-- Simulates a small internal enterprise environment
+- Simulates an internal enterprise environment
 
 Systems:
 - DC01 (Domain Controller)
@@ -51,9 +50,9 @@ Systems:
 System:
 - MON01 (Monitoring server)
 
-MON01 has dual interfaces:
-- vmbr3 → monitoring
-- vmbr2 → visibility into victim network
+MON01 uses dual interfaces:
+- vmbr3 → monitoring network
+- vmbr2 → direct visibility into victim traffic
 
 ### Malware Network (vmbr4)
 - Subnet: `10.50.50.0/24`
@@ -62,28 +61,28 @@ Systems:
 - MAL01 (Windows detonation VM)
 - REM01 (REMnux analysis VM)
 
-This separation ensures safe experimentation while also reflecting how real environments isolate production systems, monitoring infrastructure, and high-risk analysis zones.
+This segmentation ensures controlled experimentation while reflecting real-world isolation between production, monitoring, and high-risk environments.
 
 ## 2. Proxmox Network Segmentation
 
-Separate Linux bridges were created in Proxmox:
+Dedicated Linux bridges were created:
 
 - `vmbr2` → victim network  
 - `vmbr3` → monitoring network  
 - `vmbr4` → malware network  
 
-Important design decision:
+Key design decision:
 
 - No physical NIC attached  
 - No gateway configured  
 
-This ensures **complete isolation from external networks**.
+This ensures **complete isolation from external networks**, preventing accidental exposure.
 
 ## 3. Building the Domain Controller (DC01)
 
-A Windows Server 2019 VM was created to act as the domain controller.
+A Windows Server 2019 VM was configured as the domain controller.
 
-Key roles:
+Roles:
 
 - Active Directory Domain Services  
 - DNS  
@@ -92,15 +91,15 @@ Key roles:
 Configuration:
 
 - Domain: `corp.local`
-- Static IP: `172.16.10.10`
+- IP: `172.16.10.10`
 
-After setup, a snapshot was taken to preserve a clean state.
+A snapshot was taken after setup to preserve a clean baseline.
 
 ## 4. Configuring Active Directory Environment
 
-To simulate a realistic environment:
+To simulate a realistic enterprise:
 
-### Organizational Units (OU)
+### Organizational Units
 - Servers
 - Workstations
 - Users
@@ -118,89 +117,83 @@ To simulate a realistic environment:
 - svc_backup
 
 ### Admin
-- itadmin (added to Domain Admins)
+- itadmin (Domain Admins)
 
-This structure mimics a typical enterprise AD setup.
+This structure enables realistic identity and privilege-based attack scenarios.
 
 ![Active Directory Structure](/assets/attachments/ad-structure.png)
 
 ## 5. Creating Domain Workstations
 
-Two Windows 10 systems were added:
+Two Windows 10 systems:
 
 - WS01 → `172.16.10.20`
 - WS02 → `172.16.10.21`
 
-Steps:
+Configured with:
+- Static IPs  
+- DNS pointing to DC01  
+- Joined to `corp.local`  
 
-- Install Windows 10  
-- Configure static IP  
-- Set DNS to DC01  
-- Join domain `corp.local`  
-
-This enables realistic internal communication and authentication flows.
+This enables authentication flows and lateral movement simulation.
 
 ## 6. Adding WEB01 (Linux Target)
 
-An Ubuntu Server VM was created:
+An Ubuntu Server VM:
 
 - IP: `172.16.10.30`
-- Connected to victim network
 
 Purpose:
 
-- Simulate web-based attack scenarios  
-- Host vulnerable applications  
-- Extend lab beyond Windows  
+- Web attack surface simulation  
+- Hosting vulnerable applications  
+- Expanding beyond Windows-only scenarios  
 
 ## 7. Adding Kali (Attacker VM)
 
-A Kali VM was added inside the victim network:
+Kali was placed inside the victim network:
 
 - IP: `172.16.10.50`
 
-Why inside the lab:
+Benefits:
 
 - Internal attack simulation  
-- Faster testing  
-- Supports pivoting scenarios  
-- Fully self-contained environment  
+- Pivoting scenarios  
+- Fully self-contained lab  
 
 ## 8. Building the Monitoring Stack (MON01)
 
-This is the most critical component of the lab.
+The core of the detection layer.
 
-MON01 configuration:
+Configuration:
 
-- NIC1 → vmbr3 (`172.16.20.10`)
-- NIC2 → vmbr2 (`172.16.10.40`)
+- vmbr3 → `172.16.20.10`  
+- vmbr2 → `172.16.10.40`  
 
-### Tools Installed
+### Tools
 
 - **Wazuh** → SIEM + dashboard  
-- **Sysmon** → Windows event logging  
+- **Sysmon** → endpoint telemetry  
 - **Suricata** → network IDS  
 
 ### Key Design Decisions
 
-- Disabled IP forwarding (prevents pivoting)
-- Restricted firewall rules
-- Acts as an observer, not a participant
+- IP forwarding disabled (prevents pivoting)  
+- Firewall restrictions applied  
+- Monitoring-only role (no active participation)  
 
-This transforms the lab into a **detection environment**, not just an attack lab.
-
-This design ensures monitoring does not become a pivot point, maintaining visibility without introducing risk.
+This ensures MON01 provides visibility without becoming an attack path, maintaining monitoring without introducing additional risk.
 
 ![Wazuh Dashboard](/assets/attachments/wazuh-dashboard.png)
 
 ## 9. Malware Detonation Environment (MAL01)
 
-A dedicated Windows VM for malware analysis:
+A dedicated Windows analysis VM:
 
 - IP: `10.50.50.10`
-- Network: vmbr4 (isolated)
+- Network: vmbr4
 
-### Tools Installed
+### Tools
 
 - Sysmon  
 - Sysinternals Suite  
@@ -211,30 +204,25 @@ A dedicated Windows VM for malware analysis:
 
 Security measures:
 
-- Windows Defender disabled (controlled testing)
-- No external network access
-- Snapshot created for rollback
-
-The malware network is intentionally isolated with no routing or external access to prevent unintended spread or contamination.
+- No external connectivity  
+- Defender disabled (controlled testing)  
+- Snapshot for rollback  
 
 ## 10. REMnux Analysis VM
 
-REM01 was added using a prebuilt image:
+REM01 complements malware analysis:
 
 - IP: `10.50.50.20`
-- Network: vmbr4
 
-Purpose:
+Used for:
 
-- Linux-based malware analysis  
-- Network inspection  
-- Static and dynamic analysis  
-
-This complements MAL01 for deeper analysis workflows.
+- Network simulation  
+- Static + dynamic analysis  
+- Traffic inspection  
 
 ![REMnux Fakenet](/assets/attachments/remnux-fakenet.png)
 
-Simulating malware network behavior using FakeNet-NG to capture and analyze outbound traffic in an isolated environment.
+FakeNet-NG simulates internet services, allowing safe observation of malware network behavior without real external communication.
 
 ## Final Lab Layout
 
@@ -255,22 +243,13 @@ Simulating malware network behavior using FakeNet-NG to capture and analyze outb
 
 ## What This Lab Enables
 
-- Active Directory administration  
-- Internal network simulation  
-- Attack path analysis  
-- SIEM-based detection  
+- Active Directory attack simulation  
+- Lateral movement analysis  
+- SIEM-based detection workflows  
 - Endpoint telemetry analysis  
 - Network traffic inspection  
 - Safe malware detonation  
-- Full attacker-to-defender visibility  
-
-## Key Takeaways
-
-- Segmentation is more important than scale  
-- Monitoring adds more value than adding more targets  
-- Snapshots make experimentation safe  
-- Realism comes from structure, not complexity  
-- Understanding both attack and detection is essential  
+- End-to-end attacker-to-defender visibility  
 
 ## What Makes This Lab Different
 
@@ -279,10 +258,20 @@ Simulating malware network behavior using FakeNet-NG to capture and analyze outb
 - Dedicated malware analysis zone instead of mixing environments  
 - Focused on visibility and detection, not just exploitation  
 
+The environment enables safe experimentation across the full attack lifecycle, from initial access to detection and analysis.
+
+## Key Takeaways
+
+- Segmentation matters more than scale  
+- Visibility is more valuable than adding targets  
+- Snapshots enable safe experimentation  
+- Realism comes from architecture, not complexity  
+- Security requires understanding both attacker and defender  
+
 ## Conclusion
 
 This lab evolved from a simple setup into a structured environment that reflects real-world architecture.
 
-The most valuable part was not deploying systems, but designing how they interact, how they are monitored, and how they can be safely tested.
+The key takeaway is not just deploying systems, but understanding how they interact, how they are monitored, and how they can be safely tested.
 
-This foundation can now be extended into advanced attack simulations, detection engineering, and real-world incident analysis workflows.
+This foundation can now be extended into detection engineering, advanced attack simulations, and incident response workflows.
