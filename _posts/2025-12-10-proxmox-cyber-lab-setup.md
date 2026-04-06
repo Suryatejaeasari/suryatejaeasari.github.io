@@ -122,6 +122,8 @@ To simulate a realistic environment:
 
 This structure mimics a typical enterprise AD setup.
 
+![Active Directory Structure](/assets/attachments/ad-structure.png)
+
 ## 5. Creating Domain Workstations
 
 Two Windows 10 systems were added:
@@ -189,6 +191,8 @@ This transforms the lab into a **detection environment**, not just an attack lab
 
 This design ensures monitoring does not become a pivot point, maintaining visibility without introducing risk.
 
+![Wazuh Dashboard](/assets/attachments/wazuh-dashboard.png)
+
 ## 9. Malware Detonation Environment (MAL01)
 
 A dedicated Windows VM for malware analysis:
@@ -227,6 +231,10 @@ Purpose:
 - Static and dynamic analysis  
 
 This complements MAL01 for deeper analysis workflows.
+
+![REMnux Fakenet](/assets/attachments/remnux-fakenet.png)
+
+Simulating malware network behavior using FakeNet-NG to capture and analyze outbound traffic in an isolated environment.
 
 ## Final Lab Layout
 
