@@ -49,13 +49,11 @@ Ayrus runs in a dedicated VM, completely isolated from lab VMs, with its own res
 
 VM configuration:
 
-| Setting | Value |
-|---------|-------|
-| OS | Ubuntu 24.04 LTS |
-| CPU | 4 cores |
-| RAM | 8GB |
-| Disk | 100GB on ZFS pool |
-| Network | vmbr0 |
+- OS: Ubuntu 24.04 LTS
+- CPU: 4 cores
+- RAM: 8GB
+- Disk: 100GB on ZFS pool
+- Network: vmbr0
 
 A dedicated VM keeps things clean. If something breaks, only Ayrus is affected.
 
@@ -78,15 +76,13 @@ The installer walks through everything interactively.
 
 Key settings:
 
-| Setting | Value |
-|---------|-------|
-| Provider | OpenAI Codex |
-| Terminal backend | Local |
-| Sudo support | Enabled |
-| Max iterations | 150 |
-| Compression threshold | 0.8 |
-| Session reset | Inactivity + Daily at 2 AM |
-| Background service | System service (auto-starts on boot) |
+- Provider: OpenAI Codex
+- Terminal backend: Local
+- Sudo support: Enabled
+- Max iterations: 150
+- Compression threshold: 0.8
+- Session reset: Inactivity + Daily at 2 AM
+- Background service: System service (auto-starts on boot)
 
 Setting it as a system service means Ayrus starts automatically with no manual intervention needed after a reboot.
 
