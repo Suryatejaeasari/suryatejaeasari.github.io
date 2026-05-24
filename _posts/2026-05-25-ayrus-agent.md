@@ -49,11 +49,13 @@ Ayrus runs in a dedicated VM, completely isolated from lab VMs, with its own res
 
 VM configuration:
 
-- OS: Ubuntu 24.04 LTS
-- CPU: 4 cores
-- RAM: 8GB
-- Disk: 100GB on ZFS pool
-- Network: vmbr0
+| Setting | Value |
+|---------|-------|
+| OS | Ubuntu 24.04 LTS |
+| CPU | 4 cores |
+| RAM | 8GB |
+| Disk | 100GB on ZFS pool |
+| Network | vmbr0 |
 
 A dedicated VM keeps things clean. If something breaks, only Ayrus is affected.
 
@@ -76,13 +78,15 @@ The installer walks through everything interactively.
 
 Key settings:
 
-- Provider: OpenAI Codex
-- Terminal backend: Local
-- Sudo support: Enabled
-- Max iterations: 150
-- Compression threshold: 0.8
-- Session reset: Inactivity + Daily at 2 AM
-- Background service: System service (auto-starts on boot)
+| Setting | Value |
+|---------|-------|
+| Provider | OpenAI Codex |
+| Terminal backend | Local |
+| Sudo support | Enabled |
+| Max iterations | 150 |
+| Compression threshold | 0.8 |
+| Session reset | Inactivity + Daily at 2 AM |
+| Background service | System service (auto-starts on boot) |
 
 Setting it as a system service means Ayrus starts automatically with no manual intervention needed after a reboot.
 
@@ -138,8 +142,14 @@ The Pantheon lets you create multiple specialized AI personas, each with their o
 
 Four personas were created:
 
+| Persona | Purpose |
+|---------|---------|
+| Cyber Lab / Red Team Lab | Attack simulations on authorized lab VMs only |
+| Server Admin | Proxmox infrastructure and self-hosted services |
+| Researcher | Threat intelligence, CVE tracking, morning briefings |
+| Assistant | Daily tasks, coding help, writing, general questions |
+
 ### Cyber Lab / Red Team Lab
-Purpose: Cybersecurity attack simulations on authorized lab VMs only.
 
 Focus:
 - Recon and enumeration
@@ -150,7 +160,6 @@ Focus:
 Guardrails: Explicitly scoped to owned and authorized systems. Asks for confirmation before any destructive action.
 
 ### Server Admin
-Purpose: Managing Proxmox infrastructure and self-hosted services.
 
 Focus:
 - VM and storage management
@@ -160,7 +169,6 @@ Focus:
 - Backup and rollback planning
 
 ### Researcher
-Purpose: Threat intelligence and cybersecurity news.
 
 Focus:
 - Morning briefings
@@ -169,7 +177,6 @@ Focus:
 - Source-grounded summaries
 
 ### Assistant
-Purpose: Daily personal tasks and general help.
 
 Focus:
 - Coding and debugging
@@ -244,9 +251,11 @@ Then tell Ayrus to configure it as fallback and auxiliary model.
 
 Model routing:
 
-- Primary: OpenAI via Codex OAuth for conversations, reasoning, and complex tasks
-- Fallback: Llama 3.1 8B when the primary hits rate limits
-- Auxiliary: Llama 3.1 8B for background tasks, compression, and summarization
+| Role | Model | Purpose |
+|------|-------|---------|
+| Primary | OpenAI via Codex OAuth | Conversations, reasoning, complex tasks |
+| Fallback | Llama 3.1 8B | When primary hits rate limits |
+| Auxiliary | Llama 3.1 8B | Background tasks, compression, summarization |
 
 ## 9. Agent Identity
 
@@ -272,13 +281,13 @@ The account is connected to Ayrus via Gmail App Password, stored securely in the
 - Switches between 4 specialized personas on demand
 - Writes and improves his own skills over time
 - Backs up his entire brain to GitHub every night automatically
-- Falls back to local Llama when ChatGPT hits rate limits
+- Falls back to local Llama when the primary hits rate limits
 - Monitors cybersecurity RSS feeds for threat intelligence
 - Operates with his own identity for research and tool access
 
 ## What Makes This Different
 
-- Runs entirely on personal hardware with no cloud dependency
+- Core agent runs on personal hardware while using selected cloud services for model access, backup, and remote interaction
 - Self-improving loop where skills and memory grow with use
 - Multiple specialized personas instead of one generic assistant
 - Automatic brain backup that survives VM crashes and rebuilds
@@ -300,6 +309,6 @@ Ayrus is not a finished product. He is designed to keep improving the more he is
 
 The setup covered here is the foundation. What gets built on top depends entirely on how it gets used.
 
-This can be extended into scheduled automations, red team workflows, detection engineering pipelines, and more.
+This can be extended into scheduled automations, authorized cyber lab workflows, detection engineering pipelines, and infrastructure automations.
 
 The interesting part is not the setup. It is what happens after.
