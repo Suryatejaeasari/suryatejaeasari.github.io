@@ -274,6 +274,39 @@ Everything the agent does through this account is separate from personal account
 
 The account is connected to Ayrus via Gmail App Password, stored securely in the `.env` file and never passed through chat.
 
+## 10. Hermes Commands and Dashboard
+
+### Useful Commands
+
+```bash
+hermes                  # start CLI chat session
+hermes setup            # reconfigure settings
+hermes config edit      # edit config file directly
+hermes update           # update to latest version
+
+# Gateway management
+systemctl --user restart hermes-gateway.service
+systemctl --user status hermes-gateway.service
+```
+
+![Ayrus Terminal](/assets/attachments/ayrus-terminal.png)
+
+### Hermes Dashboard
+
+Hermes has a built-in web dashboard for monitoring sessions, models, cron jobs, and skills. Since the agent runs on a remote VM, access it via an SSH tunnel:
+
+```bash
+ssh -J root@<proxmox-ip> -L 9119:localhost:9119 ayrus@<agent-vm-ip>
+```
+
+Then open in the browser:
+
+```
+http://127.0.0.1:9119
+```
+
+The dashboard shows active models, total sessions, connected platforms, cron jobs, and the full skills library.
+
 ## What Ayrus Can Do Now
 
 - Answers questions and assists with daily tasks via Telegram
