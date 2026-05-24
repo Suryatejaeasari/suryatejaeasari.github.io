@@ -289,7 +289,7 @@ systemctl --user restart hermes-gateway.service
 systemctl --user status hermes-gateway.service
 ```
 
-![Ayrus Terminal](/assets/attachments/ayrus-agent.png)
+![Ayrus Terminal](/assets/attachments/ayrus-terminal.png)
 
 ### Hermes Dashboard
 
