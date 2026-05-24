@@ -1,5 +1,5 @@
 ---
-title: "Meet Ayrus: My Self-Hosted AI Agent Running on Proxmox"
+title: Meet Ayrus - My Self-Hosted AI Agent Running on Proxmox
 date: 2026-05-25 12:00:00 +0530
 categories: [Projects]
 tags: [proxmox, homelab, ai, hermes, ollama, selfhosted, telegram, llama]
