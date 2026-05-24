@@ -4,7 +4,7 @@ date: 2026-05-24 12:00:00 +0530
 categories: [Projects]
 tags: [proxmox, homelab, ai, hermes, ollama, selfhosted, telegram, llama]
 image:
-  path: assets/attachments/proxmox-setup.png
+  path: assets/attachments/ayrus-agent.png
 ---
 
 Most AI assistants live in the cloud, behind someone else's infrastructure and someone else's rules.
