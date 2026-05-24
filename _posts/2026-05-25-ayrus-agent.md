@@ -1,307 +1,614 @@
 ---
-title: Meet Ayrus - My Self-Hosted AI Agent Running on Proxmox
-date: 2026-05-25 12:00:00 +0530
-categories: [Projects]
-tags: [proxmox, homelab, ai, hermes, ollama, selfhosted, telegram, llama]
+title: Proxmox-Based Self-Hosted Infrastructure
+date: 2025-12-10 12:00:00 +0530
+categories: [Projects, Notes]
+tags: [proxmox, docker, self-hosting, wordpress, homelab, cloudflare]
 image:
   path: assets/attachments/proxmox-setup.png
 ---
 
-Most AI assistants live in the cloud, behind someone else's infrastructure and someone else's rules.
+Self-hosting was something I wanted to build properly instead of relying only on cloud platforms. The goal of this setup was to create a solid local infrastructure using Proxmox, run services inside a dedicated Ubuntu VM with Docker, and securely expose selected services using Cloudflare Tunnel.
 
-Ayrus was built differently.
-
-Ayrus is my self-hosted AI agent running inside a dedicated Ubuntu VM on Proxmox. It acts as my personal assistant, server manager, and cyber lab partner, accessible through Telegram from anywhere.
-
-The goal was not just to install another AI tool. The goal was to build an assistant that understands my homelab, my infrastructure, my workflows, and my cybersecurity lab environment.
+This architecture separates infrastructure, services, and access layers to improve scalability, isolation, and security.
 
 ## Overview
 
-Ayrus is a self-hosted personal AI agent built on [Hermes Agent](https://hermes-agent.nousresearch.com) by Nous Research, an open-source, MIT-licensed project.
+The overall setup consists of:
 
-The setup consists of:
+- **Proxmox VE** as the hypervisor
+- **Ubuntu Server VM** as the Docker host
+- **ZFS storage** for allocating larger VM disks
+- **Docker containers** for service deployment
+- **Cloudflare Zero Trust (Tunnel + Access policies)** for secure external access
 
-- **Dedicated Ubuntu VM** on Proxmox as the host
-- **OpenAI Codex OAuth** as the primary model connection
-- **Llama 3.1 8B via Ollama** as local fallback
-- **Telegram** as the mobile interface
-- **GitHub private repo** for nightly brain backup
-- **Pantheon personas** for specialized roles
-- **Dedicated agent identity** for independent operation
+Services deployed:
 
-## Architecture
+- WordPress
+- MariaDB
+- Portainer
+- Nginx Proxy Manager
 
+## 1. Proxmox Setup
+
+Proxmox VE was installed directly on the server using the official ISO.
+
+Basic installation steps:
+
+- Download the Proxmox VE ISO from the official website
+- Create a bootable USB drive
+- Boot the system using the USB and launch the installer
+- Select the target disk and configure storage
+- Set hostname, password, and management network (IP, gateway, DNS)
+
+After installation completes, access the Proxmox web interface using:
+
+```text
+https://<proxmox-ip>:8006
 ```
-OpenAI model via Codex OAuth (primary)
-Llama 3.1 8B via Ollama (fallback)
-          ↓
-Hermes Agent on Ubuntu VM on Proxmox
-          ↓
-Private GitHub Repo (nightly backup)
-Pantheon Personas (4 specialized agents)
-          ↓
-Telegram (mobile access from anywhere)
-```
+![Proxmox VM Dashboard](/assets/attachments/proxmox-dashboard.png)
 
-## 1. Creating the Ubuntu VM
+Once the web interface is available, the enterprise repositories should be disabled and replaced with the no-subscription repository.
 
-Ayrus runs in a dedicated VM, completely isolated from lab VMs, with its own resources.
+In the Proxmox UI, go to:
 
-VM configuration:
+* `Datacenter -> Node -> Updates -> Repositories`
 
-- OS: Ubuntu 24.04 LTS
-- CPU: 4 cores
-- RAM: 8GB
-- Disk: 100GB on ZFS pool
-- Network: vmbr0
+Disable:
 
-A dedicated VM keeps things clean. If something breaks, only Ayrus is affected.
+* `pve-enterprise`
+* `ceph` enterprise repository if enabled
 
-After installation, extend the LVM partition to use the full disk:
+Then add the **No-Subscription** repository.
+
+This avoids package update issues on a non-enterprise setup.
+
+## 2. Creating ZFS Storage
+
+A dedicated disk was prepared and used to create a ZFS pool. This allows larger VM disks to be allocated separately instead of keeping everything on the default storage.
+
+On the Proxmox host, the disk was wiped and a new ZFS pool was created:
 
 ```bash
-sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
-sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+wipefs -a /dev/sda
+sgdisk --zap-all /dev/sda
+zpool create -f zfspool /dev/sda
+zpool status
 ```
 
-## 2. Installing Hermes Agent
+After creating the pool, it can be added in the Proxmox UI:
 
-Hermes installs with a single command:
+* `Datacenter -> Storage -> Add -> ZFS`
+
+Select the newly created pool and enable the required content types such as disk images and containers.
+
+## 3. Creating the Docker Host VM
+
+An Ubuntu Server ISO was uploaded to Proxmox and used to create a dedicated VM for Docker.
+
+Recommended VM settings:
+
+* 2 to 4 CPU cores
+* 4 to 6 GB RAM
+* 50+ GB system disk
+* Additional large disk from the ZFS pool
+* OpenSSH Server enabled during Ubuntu installation
+
+During the Ubuntu installation:
+
+* use a normal server install
+* install **OpenSSH Server**
+* use the entire primary disk for the OS
+* create a standard user account
+
+After installation completes, remove the ISO from the VM hardware section before booting again.
+
+In Proxmox:
+
+* select the VM
+* go to `Hardware`
+* select the CD/DVD drive
+* detach it or set media to `None`
+
+## 4. Assigning a Static IP to the Docker VM
+
+After the VM is installed, a static IP can be configured using Netplan.
+
+First, check the existing netplan file:
 
 ```bash
-curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+ls /etc/netplan
 ```
 
-The installer walks through everything interactively.
-
-Key settings:
-
-- Provider: OpenAI Codex
-- Terminal backend: Local
-- Sudo support: Enabled
-- Max iterations: 150
-- Compression threshold: 0.8
-- Session reset: Inactivity + Daily at 2 AM
-- Background service: System service (auto-starts on boot)
-
-Setting it as a system service means Ayrus starts automatically with no manual intervention needed after a reboot.
-
-## 3. Connecting via OpenAI Codex OAuth
-
-Hermes supports OpenAI Codex OAuth, which lets you authenticate using an existing ChatGPT subscription instead of separate API billing.
-
-During setup, select OpenAI Codex as the provider. It generates a URL, you sign in with your ChatGPT account, paste back a verification code, and authentication is complete. The OpenAI model becomes the agent's brain without separate API billing in this setup.
-
-## 4. Setting Up Telegram
-
-Hermes connects to Telegram through BotFather:
-
-1. Open Telegram and search for BotFather
-2. Run `/newbot` and follow the steps to create a bot
-3. Copy the bot token and paste it during Hermes setup
-4. Get your Telegram user ID from `@userinfobot` and add it as the allowed user
-
-From this point, the agent is accessible from any device, anywhere.
-
-## 5. GitHub Private Repo for Brain Backup
-
-Ayrus builds knowledge over time. Memories, skills, personas, preferences. Losing that to a crashed VM is not acceptable.
-
-The solution is automatic nightly backup to a private GitHub repo.
-
-Create a GitHub Personal Access Token with `repo` and `workflow` scopes, then add it safely:
+Edit the file:
 
 ```bash
-echo "GITHUB_TOKEN=your_token_here" >> ~/.hermes/.env
+sudo nano /etc/netplan/*.yaml
 ```
 
-Then tell Ayrus on Telegram:
+Example configuration:
 
-```
-Set up a private GitHub repo called "ayrus-brain" to backup your 
-memory, skills, and soul files every night at midnight.
-I've added GITHUB_TOKEN to ~/.hermes/.env
-```
-
-Ayrus creates the repo, sets up the cron, and pushes the first backup, all on his own. If the VM ever needs to be rebuilt, restore the repo and the agent picks up exactly where it left off.
-
-Backed up nightly:
-
-- Memory files (MEMORY.md, USER.md)
-- SOUL.md
-- All skills
-- Pantheon personas
-
-## 6. Pantheon Personas
-
-The Pantheon lets you create multiple specialized AI personas, each with their own system prompt, personality, and role.
-
-Four personas were created:
-
-### Cyber Lab / Red Team Lab
-Purpose: Cybersecurity attack simulations on authorized lab VMs only.
-
-Focus:
-- Recon and enumeration
-- Exploitation paths
-- Active Directory attack simulation
-- Impact analysis and reporting
-
-Guardrails: Explicitly scoped to owned and authorized systems. Asks for confirmation before any destructive action.
-
-### Server Admin
-Purpose: Managing Proxmox infrastructure and self-hosted services.
-
-Focus:
-- VM and storage management
-- Docker and Compose stacks
-- systemd services
-- Logs, health checks, and resource monitoring
-- Backup and rollback planning
-
-### Researcher
-Purpose: Threat intelligence and cybersecurity news.
-
-Focus:
-- Morning briefings
-- RSS feed monitoring
-- CVE tracking
-- Source-grounded summaries
-
-### Assistant
-Purpose: Daily personal tasks and general help.
-
-Focus:
-- Coding and debugging
-- Writing and planning
-- General questions
-- Small automations and reminders
-
-Invoke personas directly in Telegram:
-
-```
-/personality cyber-lab
-/personality server-admin
-/personality researcher
-/personality assistant
+```yaml
+network:
+  version: 2
+  ethernets:
+    enp6s18:
+      dhcp4: no
+      addresses:
+        - 192.168.1.60/24
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8, 1.1.1.1]
 ```
 
-Persona files live at `~/.hermes/pantheon/personas/` and are backed up nightly.
-
-## 7. Proxmox SSH Access
-
-To give Ayrus the ability to manage the Proxmox host, a dedicated user was created on the host with its own SSH key pair. This keeps things clean and auditable, separate from any personal account.
-
-First, tell Ayrus to generate a key pair:
-
-```
-Generate an SSH key pair for Proxmox access
-```
-
-Ayrus generates the key pair and provides the public key. Then on the Proxmox host as root:
+Apply the configuration:
 
 ```bash
-adduser --disabled-password --gecos "Ayrus AI Assistant" ayrus
-mkdir -p /home/ayrus/.ssh
-echo 'ssh-ed25519 <AYRUS_PUBLIC_KEY>' | tee /home/ayrus/.ssh/authorized_keys
-chown -R ayrus:ayrus /home/ayrus/.ssh
-chmod 700 /home/ayrus/.ssh
-chmod 600 /home/ayrus/.ssh/authorized_keys
+sudo netplan apply
 ```
 
-Install sudo and configure passwordless access:
+Verify the assigned address:
 
 ```bash
-apt install sudo -y
-echo 'ayrus ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ayrus
-chmod 440 /etc/sudoers.d/ayrus
+ip addr show enp6s18
 ```
 
-Then tell Ayrus the Proxmox host IP and port to test the connection. He connects, verifies access, and saves the connection details for future server admin tasks.
-
-This gives Ayrus controlled administrative access through a dedicated, revocable user account.
-
-## 8. Ollama as Local Fallback
-
-OpenAI Codex OAuth has daily usage limits. To keep Ayrus always available, Ollama with Llama 3.1 8B was added as a local fallback.
+At this point, the VM should be reachable over SSH:
 
 ```bash
-curl -fsSL https://ollama.com/install.sh | sh
-ollama pull llama3.1:8b
+ssh <user>@192.168.1.60
 ```
 
-Increase context length for better tool use:
+## 5. Adding a Separate Disk for Docker Data
+
+A separate disk was added to the VM from the ZFS pool so Docker data could be stored outside the root filesystem.
+
+In Proxmox:
+
+* select the VM
+* go to `Hardware`
+* click `Add -> Hard Disk`
+* choose the ZFS pool
+* allocate the required size, such as 500 GB
+
+Inside the Ubuntu VM, the new disk was formatted and mounted to `/var/lib/docker`.
+
+First, identify the disk:
 
 ```bash
-sudo mkdir -p /etc/systemd/system/ollama.service.d
-printf '[Service]\nEnvironment="OLLAMA_CONTEXT_LENGTH=32768"\n' | \
-sudo tee /etc/systemd/system/ollama.service.d/context.conf
+lsblk -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE
+```
+
+Then format and mount it:
+
+```bash
+sudo mkfs.ext4 /dev/sdb1
+sudo mkdir -p /var/lib/docker
+sudo mount /dev/sdb1 /var/lib/docker
+```
+
+To make the mount persistent across reboots:
+
+```bash
+echo "/dev/sdb1 /var/lib/docker ext4 defaults 0 2" | sudo tee -a /etc/fstab
+sudo mount -a
+```
+
+This keeps Docker images, volumes, and containers on the larger dedicated disk.
+
+## 6. Installing Docker
+
+Docker was installed using Docker’s official repository instead of the default Ubuntu package.
+
+First install prerequisites:
+
+```bash
+sudo apt update
+sudo apt install -y ca-certificates curl gnupg lsb-release
+```
+
+Add Docker’s GPG key:
+
+```bash
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+```
+
+Add the Docker repository:
+
+```bash
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu \
+$(lsb_release -cs) stable" | \
+sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+Install Docker:
+
+```bash
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+
+Enable the service:
+
+```bash
+sudo systemctl enable docker --now
+```
+
+Add the current user to the Docker group:
+
+```bash
+sudo usermod -aG docker $USER
+sudo reboot
+```
+
+After reboot, Docker should work without `sudo`.
+
+## 7. Installing Portainer
+
+Portainer was used to manage containers and stacks from a web interface.
+
+Create the Portainer volume:
+
+```bash
+docker volume create portainer_data
+```
+
+Run Portainer:
+
+```bash
+docker run -d \
+  -p 9443:9443 \
+  -p 9000:9000 \
+  --name portainer \
+  --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:latest
+```
+
+Access Portainer at:
+
+```bash
+https://192.168.1.60:9443
+```
+
+![Portainer Dashboard](/assets/attachments/portainer-dashboard.png)
+
+From there, the local Docker environment can be managed through the browser.
+
+## 8. Deploying Nginx Proxy Manager
+
+Nginx Proxy Manager was deployed using a Portainer stack.
+
+In Portainer, go to:
+
+* `Stacks -> Add stack`
+
+Use the following compose file:
+
+```yaml
+version: "3.9"
+
+services:
+  npm:
+    image: jc21/nginx-proxy-manager:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    environment:
+      TZ: "Asia/Kolkata"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+
+volumes:
+  npm_data:
+  npm_letsencrypt:
+```
+
+Once deployed, the Nginx Proxy Manager admin interface is available at:
+
+```bash
+http://192.168.1.60:81
+```
+
+![Nginx Proxy Manager Dashboard](/assets/attachments/npm-dashboard.png)
+
+This is used later to create reverse proxy entries for services.
+
+## 9. Deploying WordPress and MariaDB
+
+WordPress and MariaDB were deployed together using Docker Compose.
+
+In Portainer, create another stack with the following file:
+
+```yaml
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:10.7
+    container_name: mariadb
+    restart: always
+    environment:
+      MYSQL_DATABASE: wpdb
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: <your-password>
+      MYSQL_ROOT_PASSWORD: <your-password>
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      WORDPRESS_DB_HOST: mariadb
+      WORDPRESS_DB_NAME: wpdb
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: <your-password>
+    volumes:
+      - wp_data:/var/www/html
+
+volumes:
+  db_data:
+  wp_data:
+```
+
+After deployment, WordPress is accessible at:
+
+```bash
+http://192.168.1.60:8080
+```
+
+At this point, the WordPress initial setup can be completed from the browser.
+
+## 10. Configuring Nginx Proxy Manager
+
+After WordPress is running, a reverse proxy entry can be created in Nginx Proxy Manager.
+
+In Nginx Proxy Manager:
+
+* go to `Hosts -> Proxy Hosts -> Add Proxy Host`
+* set the domain name
+* forward to the Docker VM IP and WordPress port
+* enable SSL if required
+
+For local-only testing, a temporary hostname can also be added to the Windows hosts file:
+
+```text
+C:\Windows\System32\drivers\etc\hosts
+```
+
+Example entry:
+
+```text
+192.168.1.60 wp.local
+```
+
+This allows the site to be accessed using a custom local name before exposing it externally.
+
+## 11. Cloudflare Tunnel Setup
+
+Cloudflare Tunnel was used to expose local services securely without port forwarding and without requiring a static public IP.
+
+Install `cloudflared` inside the Docker host VM:
+
+```bash
+sudo apt update
+sudo apt install -y wget
+cd /tmp
+wget https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+sudo apt install ./cloudflared-linux-amd64.deb
+cloudflared --version
+```
+
+Authenticate with Cloudflare:
+
+```bash
+cloudflared tunnel login
+```
+
+This opens a browser and asks for Cloudflare authentication and domain selection.
+
+Create the tunnel:
+
+```bash
+cloudflared tunnel create wp-tunnel
+```
+
+Create the Cloudflare config directory:
+
+```bash
+mkdir -p ~/.cloudflared
+```
+
+Then create the tunnel configuration file:
+
+```bash
+nano ~/.cloudflared/config.yml
+```
+
+Example configuration:
+
+```yaml
+tunnel: wp-tunnel
+credentials-file: /home/<user>/.cloudflared/<tunnel-id>.json
+
+ingress:
+  - hostname: yourdomain.com
+    service: http://192.168.1.60:8080
+  - hostname: portainer.yourdomain.com
+    service: https://192.168.1.60:9443
+    originRequest:
+      noTLSVerify: true
+  - hostname: npm.yourdomain.com
+    service: http://192.168.1.60:81
+  - hostname: proxmox.yourdomain.com
+    service: https://<proxmox-ip>:8006
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
+```
+
+Create the DNS route for the hostname:
+
+```bash
+cloudflared tunnel route dns wp-tunnel yourdomain.com
+```
+
+Install the tunnel as a service:
+
+```bash
+sudo cloudflared service install
+sudo systemctl enable cloudflared
+sudo systemctl start cloudflared
+```
+
+This makes selected services accessible through Cloudflare-managed hostnames without exposing the local network directly.
+
+## 12. Configuring Cloudflare Zero Trust Access
+
+After setting up the Cloudflare Tunnel, Zero Trust Access policies were configured to control access to exposed services.
+
+In the Cloudflare dashboard:
+
+- Go to **Zero Trust -> Access -> Applications**
+- Create a new application
+- Select **Self-hosted**
+- Enter the domain configured for the service
+
+Configure access policies:
+
+- Define allowed users (email-based or identity provider)
+- Set authentication rules (one-time PIN or SSO)
+- Restrict access based on identity instead of network exposure
+
+This adds an additional security layer on top of the tunnel by enforcing authentication before allowing access to internal services.
+
+## 13. Optional: macvlan Networking for Static Container IPs
+
+A separate internal network was later created to give containers their own fixed IP addresses.
+
+First, add a second network adapter to the Docker VM in Proxmox and attach it to a different bridge such as `vmbr1`.
+
+Inside the VM, configure the interfaces with Netplan:
+
+```yaml
+network:
+  version: 2
+  ethernets:
+    enp6s18:
+      dhcp4: true
+    enp6s19:
+      dhcp4: no
+      addresses:
+        - 10.10.10.2/24
+```
+
+Apply the config:
+
+```bash
+sudo netplan apply
+```
+
+Then create the Docker macvlan network:
+
+```bash
+docker network create -d macvlan \
+  --subnet=10.10.10.0/24 \
+  --gateway=10.10.10.1 \
+  -o parent=enp6s19 \
+  dockernet
+```
+
+Attach containers with fixed IP addresses:
+
+```bash
+docker network connect --ip 10.10.10.10 dockernet portainer
+docker network connect --ip 10.10.10.20 dockernet nginx-proxy-manager-npm-1
+docker network connect --ip 10.10.10.30 dockernet wordpress
+docker network connect --ip 10.10.10.40 dockernet mariadb
+```
+
+A macvlan shim can also be created using a systemd service so the host can communicate with the macvlan containers.
+
+Create a systemd service:
+
+```bash
+sudo nano /etc/systemd/system/macvlan-shim.service
+```
+Add the following content:
+```text
+[Unit]
+Description=Create macvlan shim and routes for Docker macvlan containers
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+
+ExecStart=/bin/sh -c '/usr/sbin/ip link add macvlan-shim link enp6s19 type macvlan mode bridge || true'
+ExecStart=/bin/sh -c '/usr/sbin/ip addr add 10.10.10.3/24 dev macvlan-shim || true'
+ExecStart=/usr/sbin/ip link set macvlan-shim up
+
+ExecStart=/usr/sbin/ip route replace 10.10.10.10/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.20/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.30/32 dev macvlan-shim
+ExecStart=/usr/sbin/ip route replace 10.10.10.40/32 dev macvlan-shim
+
+[Install]
+WantedBy=multi-user.target
+```
+Enable and start the service:
+
+```bash
 sudo systemctl daemon-reload
-sudo systemctl restart ollama.service
+sudo systemctl enable macvlan-shim.service
+sudo systemctl start macvlan-shim.service
 ```
 
-Then tell Ayrus to configure it as fallback and auxiliary model.
+## 14. Remote Access using Tailscale
 
-Model routing:
+Tailscale was used to securely access internal services such as the Proxmox interface from external devices without exposing them publicly.
 
-| Role | Model | When |
-|------|-------|------|
-| Primary | OpenAI via Codex OAuth | Conversations, reasoning, complex tasks |
-| Fallback | Llama 3.1 8B | When primary hits rate limits |
-| Auxiliary | Llama 3.1 8B | Background tasks, compression, summarization |
+Install Tailscale on the Docker host VM:
 
-## 9. Agent Identity
+```bash
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up --advertise-routes=10.10.10.0/24
+```
 
-A capable agent needs its own identity, not sharing yours.
+After running the command, a login URL will be generated. Open the link in a browser and authenticate the device.
 
-A dedicated Gmail account was created specifically for Ayrus. The idea is straightforward: just like a new employee gets their own work email, the agent gets its own account to operate from.
+Once authenticated:
 
-This gives Ayrus his own presence on the internet:
+- Navigate to the Tailscale admin console
+- Approve the advertised route `10.10.10.0/24`
 
-- Registering for tools and services he needs
-- Accessing sites that require authentication
-- Subscribing to research feeds and newsletters
-- Handling account-based automations
+This enables routing to the internal macvlan network through the Tailscale node and provides secure access to internal services such as the Proxmox interface from mobile or remote systems.
 
-Everything the agent does through this account is separate from personal accounts, auditable, and easy to revoke if needed.
+Cloudflare Tunnel is used for exposing selected services publicly, while Tailscale is used for secure private access to internal services.
 
-The account is connected to Ayrus via Gmail App Password, stored securely in the `.env` file and never passed through chat.
+## Final Result
 
-## What Ayrus Can Do Now
+At the end of this setup, the environment provides:
 
-- Answers questions and assists with daily tasks via Telegram
-- Manages infrastructure via SSH using his own dedicated user
-- Switches between 4 specialized personas on demand
-- Writes and improves his own skills over time
-- Backs up his entire brain to GitHub every night automatically
-- Falls back to local Llama when ChatGPT hits rate limits
-- Monitors cybersecurity RSS feeds for threat intelligence
-- Operates with his own identity for research and tool access
+* Proxmox-based virtualization
+* A dedicated Ubuntu Docker host
+* Separate Docker storage on a larger disk
+* Portainer for container management
+* Nginx Proxy Manager for reverse proxying
+* WordPress and MariaDB running locally
+* Cloudflare Zero Trust (Tunnel + Access policies) for secure external access
+* Optional static container networking with macvlan
+* Tailscale for secure private access to internal services
 
-## What Makes This Different
-
-- Runs entirely on personal hardware with no cloud dependency
-- Self-improving loop where skills and memory grow with use
-- Multiple specialized personas instead of one generic assistant
-- Automatic brain backup that survives VM crashes and rebuilds
-- Local fallback model so it never goes fully offline
-- Dedicated agent identity with clean separation from personal accounts
-
-## Key Takeaways
-
-- A dedicated VM for the agent keeps things clean and isolated
-- Never paste API keys or passwords in Telegram, always use the `.env` file
-- Ayrus is self-healing, tell him what is broken and he fixes it himself
-- Start with one agent and let it build skills around your specific workflow
-- 8GB RAM is workable but 16GB is more comfortable for local model inference
-- The OpenAI Codex OAuth path is the easiest way to get a capable model without API billing
-
-## Conclusion
-
-Ayrus is not a finished product. He is designed to keep improving the more he is used. Skills get written and refined. Memory grows. The agent adapts to the workflow.
-
-The setup covered here is the foundation. What gets built on top depends entirely on how it gets used.
-
-This can be extended into scheduled automations, red team workflows, detection engineering pipelines, and more.
-
-The interesting part is not the setup. It is what happens after.
