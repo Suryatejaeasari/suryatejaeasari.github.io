@@ -8,8 +8,14 @@
   const code = document.getElementById('base-access-code');
   const content = document.getElementById('base-protected-content');
   const button = form.querySelector('button');
-  async function readContent() {
-    const response = await fetch(`${API}/resources/WR-001/content`, {credentials:'include', cache:'no-store'});
+  async function readContent(afterUnlock = false) {
+    // Vary URL to avoid stale 403 responses from a previously installed service worker.
+    const get = () => fetch(`${API}/resources/WR-001/content?attempt=${crypto.randomUUID()}`, {
+      credentials:'include', cache:'no-store', headers:{'Accept':'text/plain'}
+    });
+    let response = await get();
+    // Immediately after redemption, retry a transient 403 once with a fresh URL.
+    if (afterUnlock && response.status === 403) response = await get();
     if (response.ok) {
       const body = await response.text();
       // Safe initial rendering: never insert untrusted Markdown as raw HTML.
@@ -25,7 +31,11 @@
       await fetch(`${API}/session`, {method:'POST', credentials:'include', cache:'no-store'});
       return false;
     }
-    if (response.status === 403) return false;
+    if (response.status === 403) {
+      if (!afterUnlock) return false;
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Access grant not visible to the content request (403).');
+    }
     const err = await response.json().catch(() => ({}));
     throw new Error(err.error || `Resource unavailable (${response.status})`);
   }
@@ -52,7 +62,7 @@
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || `Unable to unlock (${response.status})`);
       code.value = '';
-      if (!await readContent()) throw new Error('Access granted but content could not be loaded.');
+      if (!await readContent(true)) throw new Error('Access granted but content could not be loaded. Please reload once.');
     } catch (err) {status.textContent = err.message;status.classList.add('base-error');}
     finally {button.disabled = false;}
   });
