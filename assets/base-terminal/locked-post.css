@@ -11,15 +11,3 @@
 #base-protected-content table{width:100%;border-collapse:collapse}
 #base-protected-content th,#base-protected-content td{border:1px solid var(--main-border-color,#596574);padding:.5rem .7rem;text-align:left}
 #base-protected-content ul,#base-protected-content ol{padding-left:1.6rem}
-
-/* V5: vault gate disappears; unlocked resource becomes an ordinary article body. */
-.base-locked-page{max-width:none;margin:0;padding:0}
-.base-locked-page [hidden]{display:none!important}
-.base-vault-gate{max-width:760px;margin:2rem auto;padding:0 1rem}
-.base-chirpy-article{width:100%;margin:0;padding:0}
-.base-article-header{margin:2rem 0 1.5rem}
-.base-article-header h1{font-size:clamp(2rem,4vw,3rem);line-height:1.25;margin:0 0 1.1rem}
-.base-article-meta,.base-article-byline{color:var(--text-muted-color,#90a0b3);font-size:.95rem;margin:.75rem 0}
-.base-article-cover{display:block;width:100%;height:auto;max-height:560px;object-fit:cover;border-radius:.6rem;margin:1.5rem 0}
-#base-protected-content.post-content{margin:1.5rem 0 0;white-space:normal!important;background:transparent!important;padding:0!important;font-family:inherit!important}
-#base-protected-content.post-content[hidden]{display:none!important}

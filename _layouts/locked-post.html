@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<div class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}">
+<div class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}" data-slug="{{ page.slug | escape }}">
   <!-- Public gate only: never include private Markdown in the Jekyll source page. -->
   <section id="base-vault-gate" class="base-vault-gate" aria-live="polite">
     <p class="base-locked-kicker">BASE // SEALED RESOURCE</p>
@@ -13,7 +13,7 @@ layout: default
         <label for="base-access-code">Access code</label>
         <input id="base-access-code" name="code" type="text" required maxlength="128" autocomplete="off" spellcheck="false" placeholder="BASE-XXXX-XXXX-XXXX">
         <button type="submit">Unlock writeup</button>
-        <p>Complete CH-001 in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
+        <p>Complete {{ page.challenge_id | default: "CH-001" | escape }} in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
       </form>
     </div>
   </section>
@@ -31,5 +31,5 @@ layout: default
     <div id="base-protected-content" class="post-content" hidden></div>
   </article>
 </div>
-<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=5">
-<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=5" defer></script>
+<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=6">
+<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=6" defer></script>

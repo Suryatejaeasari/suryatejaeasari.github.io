@@ -2,7 +2,11 @@
   'use strict';
   const API = 'https://api.base.easari.com';
   const page = document.querySelector('.base-locked-page');
-  if (!page || page.dataset.resourceId !== 'WR-001') return;
+  if (!page) return;
+  const slug = page.dataset.slug || '';
+  const legacy = !slug && page.dataset.resourceId === 'WR-001';
+  if (!legacy && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return;
+  const endpoint = legacy ? `${API}/resources/WR-001` : `${API}/articles/${encodeURIComponent(slug)}`;
   const status = document.getElementById('base-access-status');
   const form = document.getElementById('base-unlock-form');
   const code = document.getElementById('base-access-code');
@@ -17,7 +21,7 @@
     content = replacement;
   }
   content.classList.add('post-content');
-  console.info('BASE locked post transition v5 loaded');
+  console.info('BASE generic locked post v6 loaded', legacy ? 'WR-001 legacy' : slug);
   const button = form.querySelector('button');
   const gate = document.getElementById('base-vault-gate');
   const article = document.getElementById('base-unlocked-article');
@@ -94,7 +98,7 @@
     return root;
   }
   async function fetchContent() {
-    return fetch(`${API}/resources/WR-001/content?attempt=${crypto.randomUUID()}`, {
+    return fetch(`${endpoint}/content?attempt=${crypto.randomUUID()}`, {
       credentials:'include', cache:'no-store', headers:{Accept:'text/plain'}
     });
   }
@@ -132,7 +136,7 @@
     event.preventDefault(); const secret = code.value.trim(); if (!secret) return;
     button.disabled = true; status.classList.remove('base-error'); status.textContent = 'Validating access…';
     try {
-      const response = await fetch(`${API}/resources/WR-001/unlock`, {
+      const response = await fetch(`${endpoint}/unlock`, {
         method:'POST', credentials:'include', cache:'no-store',
         headers:{'Content-Type':'application/json'}, body:JSON.stringify({code:secret})
       });
