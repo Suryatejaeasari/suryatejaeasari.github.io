@@ -1,0 +1,22 @@
+---
+layout: default
+---
+<article class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}">
+  <header class="base-locked-header">
+    <p class="base-locked-kicker">BASE // SEALED RESOURCE</p>
+    <h1>{{ page.title | escape }}</h1>
+    <p>{{ page.description | escape }}</p>
+  </header>
+  <section class="base-locked-panel" id="base-locked-panel" aria-live="polite">
+    <p id="base-access-status">Checking access…</p>
+    <form id="base-unlock-form" hidden>
+      <label for="base-access-code">Access code</label>
+      <input id="base-access-code" name="code" type="text" required maxlength="128" autocomplete="off" spellcheck="false" placeholder="BASE-XXXX-XXXX-XXXX">
+      <button type="submit">Unlock writeup</button>
+      <p>Complete CH-001 in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
+    </form>
+    <div id="base-protected-content" hidden></div>
+  </section>
+</article>
+<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}">
+<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}" defer></script>
