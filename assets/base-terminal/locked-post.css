@@ -11,3 +11,8 @@
 #base-protected-content table{width:100%;border-collapse:collapse}
 #base-protected-content th,#base-protected-content td{border:1px solid var(--main-border-color,#596574);padding:.5rem .7rem;text-align:left}
 #base-protected-content ul,#base-protected-content ol{padding-left:1.6rem}
+
+/* Version 4: the article container must not inherit preformatted text styling. */
+#base-protected-content.post-content{display:block;white-space:normal!important;font-family:inherit!important;background:transparent!important;padding:0!important;overflow:visible!important}
+#base-protected-content.post-content[hidden]{display:none!important}
+#base-protected-content.post-content h1,#base-protected-content.post-content h2,#base-protected-content.post-content h3{font-family:inherit;white-space:normal}

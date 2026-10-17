@@ -6,7 +6,18 @@
   const status = document.getElementById('base-access-status');
   const form = document.getElementById('base-unlock-form');
   const code = document.getElementById('base-access-code');
-  const content = document.getElementById('base-protected-content');
+  let content = document.getElementById('base-protected-content');
+  // Recover from older layouts that used a preformatted container.
+  if (content && content.tagName !== 'DIV') {
+    const replacement = document.createElement('div');
+    replacement.id = 'base-protected-content';
+    replacement.className = 'post-content';
+    replacement.hidden = content.hidden;
+    content.replaceWith(replacement);
+    content = replacement;
+  }
+  content.classList.add('post-content');
+  console.info('BASE locked reader v4 loaded');
   const button = form.querySelector('button');
 
   // Safe, dependency-free Markdown subset. Raw HTML is rendered literally.
