@@ -1,22 +1,35 @@
 ---
 layout: default
 ---
-<article class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}">
-  <header class="base-locked-header">
+<div class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}">
+  <!-- Public gate only: never include private Markdown in the Jekyll source page. -->
+  <section id="base-vault-gate" class="base-vault-gate" aria-live="polite">
     <p class="base-locked-kicker">BASE // SEALED RESOURCE</p>
     <h1>{{ page.title | escape }}</h1>
     <p>{{ page.description | escape }}</p>
-  </header>
-  <section class="base-locked-panel" id="base-locked-panel" aria-live="polite">
-    <p id="base-access-status">Checking access…</p>
-    <form id="base-unlock-form" hidden>
-      <label for="base-access-code">Access code</label>
-      <input id="base-access-code" name="code" type="text" required maxlength="128" autocomplete="off" spellcheck="false" placeholder="BASE-XXXX-XXXX-XXXX">
-      <button type="submit">Unlock writeup</button>
-      <p>Complete CH-001 in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
-    </form>
-    <div id="base-protected-content" class="post-content" hidden></div>
+    <div class="base-locked-panel">
+      <p id="base-access-status">Checking access…</p>
+      <form id="base-unlock-form" hidden>
+        <label for="base-access-code">Access code</label>
+        <input id="base-access-code" name="code" type="text" required maxlength="128" autocomplete="off" spellcheck="false" placeholder="BASE-XXXX-XXXX-XXXX">
+        <button type="submit">Unlock writeup</button>
+        <p>Complete CH-001 in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
+      </form>
+    </div>
   </section>
-</article>
-<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=4">
-<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=4" defer></script>
+  <!-- No protected content is present in public HTML; JS fetches it after authorization. -->
+  <article id="base-unlocked-article" class="base-chirpy-article" hidden>
+    <header class="base-article-header">
+      <h1>{{ page.title | escape }}</h1>
+      <div class="base-article-meta">
+        {% if page.date %}<span>Posted <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%b %-d, %Y' }}</time></span>{% endif %}
+        {% if page.last_modified_at %}<span> · Updated <time datetime="{{ page.last_modified_at | date_to_xmlschema }}">{{ page.last_modified_at | date: '%b %-d, %Y' }}</time></span>{% endif %}
+      </div>
+      {% if page.image.path %}<img class="base-article-cover" src="{{ page.image.path | relative_url }}" alt="{{ page.image.alt | default: page.title | escape }}">{% elsif page.image %}{% unless page.image.path %}<img class="base-article-cover" src="{{ page.image | relative_url }}" alt="{{ page.title | escape }}">{% endunless %}{% endif %}
+      {% if page.author %}<p class="base-article-byline">By {{ page.author | escape }}</p>{% endif %}
+    </header>
+    <div id="base-protected-content" class="post-content" hidden></div>
+  </article>
+</div>
+<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=5">
+<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=5" defer></script>

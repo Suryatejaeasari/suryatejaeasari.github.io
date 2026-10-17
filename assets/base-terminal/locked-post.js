@@ -17,8 +17,10 @@
     content = replacement;
   }
   content.classList.add('post-content');
-  console.info('BASE locked reader v4 loaded');
+  console.info('BASE locked post transition v5 loaded');
   const button = form.querySelector('button');
+  const gate = document.getElementById('base-vault-gate');
+  const article = document.getElementById('base-unlocked-article');
 
   // Safe, dependency-free Markdown subset. Raw HTML is rendered literally.
   function inline(text, parent) {
@@ -100,9 +102,15 @@
     let response = await fetchContent();
     if (afterUnlock && response.status === 403) response = await fetchContent();
     if (response.ok) {
-      content.replaceChildren(renderMarkdown(await response.text()));
-      content.hidden = false; form.hidden = true;
-      status.classList.remove('base-error'); status.textContent = 'Access granted — WR-001';
+      const markdown = await response.text();
+      const rendered = renderMarkdown(markdown);
+      // The public page owns the title: avoid repeating the document's first H1.
+      const first = rendered.firstElementChild;
+      if (first?.tagName === 'H1' && first.textContent.trim() === article.querySelector('h1')?.textContent.trim()) first.remove();
+      content.replaceChildren(rendered);
+      content.hidden = false;
+      gate.hidden = true; article.hidden = false;
+      status.classList.remove('base-error'); status.textContent = '';
       return true;
     }
     if (response.status === 401) {
