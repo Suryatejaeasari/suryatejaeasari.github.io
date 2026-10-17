@@ -50,17 +50,12 @@
   async function showKey() {
     if (!completed) return 'cat: access-01.key: Complete CH-001 first.';
     const data = await api('/rewards/CH-001/issue',{method:'POST'});
-    return `BASE ACCESS CERTIFICATE\n------------------------------\nChallenge : ${data.challenge_id}\nResource  : ${data.resource_id}\nStatus    : ${data.status.toUpperCase()}\n\nSECRET: ${data.secret}\n------------------------------\nUse unlock WR-001 to redeem your key.`;
+    return `BASE ACCESS CERTIFICATE\n------------------------------\nChallenge : ${data.challenge_id}\nStatus    : ${data.status.toUpperCase()}\n\nSECRET: ${data.secret}\n------------------------------\nUse this personal code on a locked article page on BASE.`;
   }
-  async function unlockResource(code) {
-    if (!code) return 'Usage: unlock WR-001 <code>';
-    const data=await api('/resources/WR-001/unlock',{method:'POST',body:JSON.stringify({code})});
-    return data.unlocked ? '[+] WR-001 unlocked. Use cat writeups/WR-001.md to read it.' : 'Unlock failed.';
-  }
-  async function readResource() {
-    const response=await fetch(API+'/resources/WR-001/content',{credentials:'include',cache:'no-store'});
-    if (!response.ok) { const data=await response.json().catch(()=>({})); throw new Error(data.error||`Resource request failed (${response.status})`); }
-    return response.text();
+  async function vaultCatalog() {
+    const data = await api('/articles');
+    const entries = data.articles || [];
+    return entries.length ? 'BASE VAULT — LOCKED ARTICLES\n' + entries.map(a=>`  ${a.title} [${a.challenge_id}] — /posts/${a.slug}/`).join('\n') : 'No protected articles are published.';
   }
   const filesystem = {
     '/': {type:'dir', children:['home']},
@@ -70,7 +65,7 @@
     [HOME+'/projects']: {type:'dir', children:['README.txt']},
     [HOME+'/projects/README.txt']: {type:'file', text:'For projects and portfolio information, use exit to visit the main BASE blog.'},
     [HOME+'/writeups']: {type:'dir', children:['README.txt']},
-    [HOME+'/writeups/README.txt']: {type:'file', text:'Protected writeups are not bundled with this public terminal. Vault integration arrives in a later phase.'},
+    [HOME+'/writeups/README.txt']: {type:'file', text:'Protected writeups are published as locked articles on the BASE blog. Use vault to list them.'},
     [HOME+'/documents']: {type:'dir', children:['welcome.txt','notes.txt','archive.log']},
     [HOME+'/documents/welcome.txt']: {type:'file', text:'BASE // SYSTEM NOTICE\n\nThis is a simulated terminal environment.\nAvailable documents may contain remnants of previous system activity.\nSystem integrity: OK'},
     [HOME+'/documents/notes.txt']: {type:'file', text:'OPERATOR NOTES\n--------------\nThe handover was never completed.\nBefore leaving, the operator mentioned that the terminal history might explain what happened.\nNo access credentials were included in the public handover.'},
@@ -106,12 +101,10 @@
     '  challenge submit CH-001 <phrase>   Verify recovered phrase','',
     'VAULT COMMANDS',
     '  cat access-01.key    Retrieve your unique access code',
-    '  unlock WR-001 <code> Redeem issued code',
-    '  cat writeups/WR-001.md  Read unlocked writeup',
-    '  vault                Show vault information','',
+    '  vault                List locked articles and their blog URLs','',
     'Use man <command> for more information.'
   ].join('\n');
-  const available = ['help','ls','cd','pwd','cat','base64','clear','history','whoami','date','echo','man','neofetch','exit','challenge','vault','unlock','sudo'];
+  const available = ['help','ls','cd','pwd','cat','base64','clear','history','whoami','date','echo','man','neofetch','exit','challenge','vault','sudo'];
   const manuals = {
     help: ['Show categorized available commands.', 'Usage: help'],
     ls: ['List directory contents, including hidden names with -a or -la.', 'Usage: ls [-la] [path]'],
@@ -132,8 +125,7 @@
     'challenge start': ['Start The Forgotten Operator investigation.', 'Usage: challenge start CH-001'],
     'challenge hint': ['Reveal the next hint (three available).', 'Usage: challenge hint CH-001'],
     'challenge submit': ['Submit a phrase for secure verification.', 'Usage: challenge submit CH-001 <phrase>'],
-    vault: ['Show vault status. Locked content is delivered by the API.', 'Usage: vault'],
-    unlock: ['Redeem your visitor-specific code for WR-001.', 'Usage: unlock WR-001 <code>'],
+    vault: ['List published protected articles. Open a locked article to use your CH-001 code.', 'Usage: vault'],
     sudo: ['Reserved for future secure owner authentication. Do not enter real passwords here.', 'Status: not enabled']
   };
   function manual(args) {
@@ -165,7 +157,7 @@
     case 'ls':return listing(rest.find(x=>!x.startsWith('-'))||'.',rest.some(x=>x.startsWith('-')&&x.includes('a')));
     case 'pwd':return cwd;
     case 'cd':{const dest=normalize(first||HOME), e=filesystem[dest];if(!e)return `cd: ${first}: No such directory`;if(e.type!=='dir')return `cd: ${first}: Not a directory`;cwd=dest;updatePrompt();return '';}
-    case 'cat':{if(!first)return 'cat: missing file operand';if(normalize(first)===HOME+'/access-01.key')return showKey();if(normalize(first)===HOME+'/writeups/WR-001.md')return readResource();const e=get(first);return !e?`cat: ${first}: No such file`:(e.type==='dir'?`cat: ${first}: Is a directory`:e.text);}
+    case 'cat':{if(!first)return 'cat: missing file operand';if(normalize(first)===HOME+'/access-01.key')return showKey();const e=get(first);return !e?`cat: ${first}: No such file`:(e.type==='dir'?`cat: ${first}: Is a directory`:e.text);}
     case 'base64':return first==='-d'?decodeFile(rest[1]):'Usage: base64 -d <file>';
     case 'clear':[...screen.children].forEach(n=>{if(n!==form)n.remove()});return '';
     case 'history':return history.map((v,i)=>`${i+1}  ${v}`).join('\n');
@@ -175,8 +167,7 @@
     case 'man':return manual(rest);
     case 'neofetch':return `BASE_\nOS: BASE browser simulation\nShell: base-sh 3.0\nRole: ${role}\nHost: base.easari.com`;
     case 'challenge':return challenge(rest);
-    case 'vault':return 'WR-001 — SEALED (CH-001). Complete the challenge, cat access-01.key, then unlock WR-001 <code>.';
-    case 'unlock':return first==='WR-001'?unlockResource(rest[1]):'Usage: unlock WR-001 <code>';
+    case 'vault':return vaultCatalog();
     case 'sudo':return 'Owner authentication is not enabled. Do not enter passwords in this Phase 2 terminal.';
     case 'exit':emit('[+] Closing terminal session...\n[+] Returning to BASE.');window.location.assign(document.documentElement.dataset.homeUrl||'/');return '';
     default:return `${c}: command not found. Type help.`;
@@ -186,9 +177,9 @@
     const raw=input.value.trim(); if(!raw)return;
     busy=true; input.disabled=true; input.value='';
     const sensitive=/^unlock\s/i.test(raw);
-    history.push(sensitive?'unlock WR-001 [REDACTED]':raw);
+    history.push(sensitive?'[REDACTED SECRET COMMAND]':raw);
     historyCursor=history.length;
-    emit(`${prompt.textContent} ${sensitive?'unlock WR-001 [REDACTED]':raw}`,'echo prompt-text');
+    emit(`${prompt.textContent} ${sensitive?'[REDACTED SECRET COMMAND]':raw}`,'echo prompt-text');
     try { const out=await execute(raw); emit(out,/not found|not enabled|No such|missing|Usage:|unknown|denied|incorrect|failed|first/i.test(out||'')?'output warn':'output'); }
     catch(error){emit(error.message||'Request failed','output warn');}
     finally {busy=false;input.disabled=false;input.focus();screen.scrollTop=screen.scrollHeight;}
@@ -226,10 +217,7 @@
     } else if (['cat', 'cd', 'ls'].includes(cmd) && tokens.length >= 1) {
       options = completePath(part, cmd === 'cd');
       if(cmd==='cat' && completed && 'access-01.key'.startsWith(part))options.push('access-01.key');
-      if(cmd==='cat' && 'writeups/WR-001.md'.startsWith(part))options.push('writeups/WR-001.md');
       appendSpace = !options.some(x => x.endsWith('/'));
-    } else if (cmd === 'unlock' && tokens.length === 1) {
-      options = ['WR-001'].filter(x=>x.toLowerCase().startsWith(part.toLowerCase()));
     } else if (cmd === 'base64') {
       if (tokens.length === 1) options = ['-d'].filter(x => x.startsWith(part));
       else if (tokens.length === 2 && tokens[1] === '-d') options = completePath(part);

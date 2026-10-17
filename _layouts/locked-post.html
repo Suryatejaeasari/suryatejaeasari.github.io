@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<div class="base-locked-page" data-resource-id="{{ page.resource_id | escape }}" data-slug="{{ page.slug | escape }}">
+<div class="base-locked-page" data-slug="{{ page.slug | escape }}">
   <!-- Public gate only: never include private Markdown in the Jekyll source page. -->
   <section id="base-vault-gate" class="base-vault-gate" aria-live="polite">
     <p class="base-locked-kicker">BASE // SEALED RESOURCE</p>
@@ -31,5 +31,5 @@ layout: default
     <div id="base-protected-content" class="post-content" hidden></div>
   </article>
 </div>
-<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=6">
-<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=6" defer></script>
+<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=7">
+<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=7" defer></script>
