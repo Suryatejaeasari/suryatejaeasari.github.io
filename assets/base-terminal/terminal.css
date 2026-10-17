@@ -1,0 +1,27 @@
+ :root{color-scheme:dark;--bg:#090e14;--panel:#0e1721;--line:#273444;--green:#67e8a5;--text:#d3dfec;--muted:#90a0b3;--amber:#f0c674;--red:#ff8888}
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{background:var(--bg);font:15px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--text)}
+.shell{width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--panel);overflow:hidden}
+.shell-head,.shell-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;background:#111e29;color:var(--muted);font-size:12px}
+.shell-head{border-bottom:1px solid var(--line)}.shell-foot{border-top:1px solid var(--line);font-size:10px;letter-spacing:.03em}
+.lights{display:flex;gap:7px}.lights i{width:10px;height:10px;border-radius:50%;background:#e76a70}.lights i:nth-child(2){background:#e9bd62}.lights i:nth-child(3){background:#61c991}.head-mark{color:var(--green)}
+.shell-screen{flex:1;min-height:0;overflow-y:auto;padding:26px 24px;overflow-wrap:anywhere;scrollbar-color:#3b5a62 transparent}
+/* BASE wordmark: outline typography, solid cursor, understated system label */
+.brand-lockup{display:inline-flex;flex-direction:column;align-items:flex-start;margin:3px 0 25px}
+.brand-kicker{font-size:10px;line-height:1.5;color:var(--green);letter-spacing:.22em;margin-bottom:8px;opacity:.8}
+.banner{display:flex;align-items:flex-end;font-size:clamp(52px,10vw,112px);font-weight:900;line-height:1.04;letter-spacing:0;margin-left:0}
+.brand-word{letter-spacing:.16em;color:transparent;-webkit-text-stroke:1.5px var(--green);paint-order:stroke fill;text-shadow:0 0 28px rgba(103,232,165,.10)}
+.brand-cursor{display:inline-block;flex:none;width:.50em;height:.098em;background:var(--green);margin-left:-.10em;margin-bottom:.18em;transform:none;animation:base-cursor 1.1s steps(1,end) infinite}
+.tagline{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.32em;color:var(--muted);margin:10px 0 0}
+.tagline-rule{width:31px;height:1px;display:inline-block;background:var(--green);flex:none}
+@keyframes base-cursor{50%{opacity:.20}}
+@media(max-width:600px){.banner{font-size:clamp(48px,15vw,80px)}.tagline{font-size:9px;letter-spacing:.18em}.brand-kicker{font-size:9px}}
+
+.ok,.prompt-text{color:var(--green)}.error{color:var(--red)}.warn{color:var(--amber)}.output{white-space:pre-wrap;margin:2px 0 12px}.echo{margin:12px 0 2px}.shell-screen p{margin:3px 0}
+#command-form{display:flex;align-items:baseline;gap:10px;margin:10px 0 0;padding:0;min-height:26px}#prompt{color:var(--green);white-space:nowrap;flex:none}#command-input{background:transparent;outline:none;border:0;flex:1;min-width:0;color:var(--text);font:inherit;caret-color:var(--green);padding:0;border-radius:0}
+@media(max-width:600px){.shell-screen{padding:18px 14px}.shell-head,.shell-foot{padding:10px 12px}#command-form{font-size:13px}#hint{display:none}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important}}
+
+/* Responsive spaced-out wordmark */
+@media(max-width:600px){.brand-word{letter-spacing:.095em}.brand-cursor{margin-left:-.08em;margin-bottom:.15em}}

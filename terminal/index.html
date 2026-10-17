@@ -1,0 +1,40 @@
+---
+layout: null
+permalink: /terminal/
+title: BASE Terminal
+---
+<!doctype html>
+<html lang="en" data-home-url="{{ '/' | relative_url }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090e14">
+  <meta name="description" content="BASE Terminal — Beyond the Surface">
+  <title>BASE Terminal | {{ site.title | escape }}</title>
+  <link rel="stylesheet" href="{{ '/assets/base-terminal/terminal.css' | relative_url }}">
+  <script defer src="{{ '/assets/base-terminal/terminal.js' | relative_url }}"></script>
+</head>
+<body>
+  <main class="shell" aria-label="BASE simulated terminal">
+    <header class="shell-head">
+      <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+      <span>BASE // TERMINAL</span>
+      <span class="head-mark" aria-hidden="true">&gt;_</span>
+    </header>
+    <div class="shell-screen" id="screen" role="log" aria-live="polite" aria-relevant="additions text">
+      <div class="brand-lockup" aria-label="BASE — Beyond the Surface">
+        <span class="brand-kicker">[ BASE SYSTEM / 001 ]</span>
+        <div class="banner"><span class="brand-word">BASE</span><span class="brand-cursor" aria-hidden="true"></span></div>
+        <p class="tagline"><span class="tagline-rule" aria-hidden="true"></span>BEYOND THE SURFACE</p>
+      </div>
+      <p class="ok">[ OK ] Public environment initialized.</p>
+      <p>Welcome, user. Type <strong>help</strong> to explore.</p>
+      <form id="command-form" autocomplete="off">
+        <label for="command-input" id="prompt">user@base:~$</label>
+        <input id="command-input" type="text" name="command" aria-label="Terminal command" spellcheck="false" autocapitalize="off" autocomplete="off" autofocus>
+      </form>
+    </div>
+    <footer class="shell-foot"><span>SIMULATED ENVIRONMENT · NO REAL SYSTEM ACCESS</span><span id="hint">↑↓ history · Tab autocomplete</span></footer>
+  </main>
+</body>
+</html>
