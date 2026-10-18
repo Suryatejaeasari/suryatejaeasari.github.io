@@ -1,5 +1,5 @@
 ---
-title: BASE v1 Terminal — Architecture, Deployment and Configuration
+title: BASE v1 Terminal — Complete Build and Configuration Walkthrough
 date: 2026-10-19 01:00:00 +0530
 categories:
 - Projects
@@ -10,11 +10,11 @@ tags:
 - chirpy
 - security
 - architecture
-description: A technical walkthrough of the BASE browser terminal, CH-001, owner sessions,
-  Vault integration, and protected publishing.
+description: Detailed implementation steps for the browser terminal, challenge integration,
+  owner authentication, Cloudflare API and private Chirpy publishing.
 image:
-  path: assets/attachments/base-terminal-cover.png
-reading_minutes: 8
+  path: /assets/attachments/base-v1-terminal-cover.png
+reading_minutes: 16
 layout: locked-post
 access: locked
 slug: base-v1-terminal
