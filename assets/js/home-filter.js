@@ -1,75 +1,98 @@
 
 (() => {
-  const bar = document.getElementById("home-filter");
+  'use strict';
+
+  const bar = document.getElementById('home-filter');
   if (!bar) return;
 
-  const buttons = [...bar.querySelectorAll("button[data-filter]")];
-  const cards = [...document.querySelectorAll("#post-list .card-wrapper")];
+  const buttons = [...bar.querySelectorAll('button[data-filter]')];
+  const cards = [...document.querySelectorAll('#post-list .card-wrapper')];
+  const lockedToggle = document.getElementById('base-locked-only');
 
   const tokens = (el, attr) =>
-    (el.getAttribute(attr) || "").split(/\s+/).filter(Boolean);
+    (el.getAttribute(attr) || '').split(/\s+/).filter(Boolean);
 
-  const apply = (raw) => {
-    buttons.forEach(b => {
-      const on = b.dataset.filter === raw;
-      b.classList.toggle("active", on);
-      b.setAttribute("aria-pressed", on ? "true" : "false");
+  let currentFilter = 'all';
+
+  function apply() {
+    buttons.forEach(button => {
+      const active = button.dataset.filter === currentFilter;
+
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
     });
 
-    const [kind, value] = raw.includes(":")
-      ? raw.split(":")
-      : ["all", ""];
+    const [kind, value] = currentFilter.includes(':')
+      ? currentFilter.split(':')
+      : ['all', ''];
 
     cards.forEach(card => {
-      let show = true;
+      let categoryMatch = true;
 
-      if (kind === "cat") {
-        show = tokens(card, "data-cats").includes(value);
-
-      } else if (kind === "type") {
-        show = tokens(card, "data-type").includes(value);
-
-      } else if (kind === "access") {
-        show = (card.dataset.access || "public") === value;
+      if (kind === 'cat') {
+        categoryMatch = tokens(card, 'data-cats').includes(value);
+      } else if (kind === 'type') {
+        categoryMatch = tokens(card, 'data-type').includes(value);
       }
 
-      card.style.display = show ? "" : "none";
+      const lockedMatch =
+        !lockedToggle.checked ||
+        card.dataset.access === 'locked';
+
+      card.style.display =
+        categoryMatch && lockedMatch ? '' : 'none';
     });
 
-    const hash =
-      raw === "cat:projects" ? "projects" :
-      raw === "type:publication" ? "publications" :
-      raw === "type:case-study" ? "case-studies" :
-      raw === "access:locked" ? "locked" : "";
+    updateHash();
+  }
 
-    if (hash) {
-      history.replaceState(null, "", `#${hash}`);
-    } else {
-      history.replaceState(null, "", location.pathname + location.search);
-    }
-  };
+  function updateHash() {
+    const categoryHash = {
+      'cat:projects': 'projects',
+      'type:publication': 'publications',
+      'type:case-study': 'case-studies',
+      'cat:notes': 'notes'
+    }[currentFilter] || '';
 
-  const fromHash = () => {
-    const h = location.hash.replace("#", "");
+    const params = new URLSearchParams();
 
-    if (h === "projects") return "cat:projects";
-    if (h === "publications") return "type:publication";
-    if (h === "case-studies" || h === "case%20studies") {
-      return "type:case-study";
-    }
-    if (h === "locked") return "access:locked";
+    if (categoryHash) params.set('filter', categoryHash);
+    if (lockedToggle.checked) params.set('locked', '1');
 
-    return "all";
-  };
+    const query = params.toString();
+    const url = location.pathname +
+      (query ? `?${query}` : '');
 
-  bar.addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-filter]");
-    if (btn) apply(btn.dataset.filter);
+    history.replaceState(null, '', url);
+  }
+
+  function restoreFilters() {
+    const params = new URLSearchParams(location.search);
+
+    const categories = {
+      projects: 'cat:projects',
+      publications: 'type:publication',
+      'case-studies': 'type:case-study',
+      notes: 'cat:notes'
+    };
+
+    currentFilter = categories[params.get('filter')] || 'all';
+    lockedToggle.checked = params.get('locked') === '1';
+
+    apply();
+  }
+
+  bar.addEventListener('click', event => {
+    const button = event.target.closest('button[data-filter]');
+    if (!button) return;
+
+    currentFilter = button.dataset.filter;
+    apply();
   });
 
-  window.addEventListener("hashchange", () => {
-    apply(fromHash());
-  });
+  lockedToggle.addEventListener('change', apply);
 
-  apply(fromHash());
+  window.addEventListener('popstate', restoreFilters);
+
+  restoreFilters();
 })();

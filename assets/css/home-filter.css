@@ -169,3 +169,68 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 .base-vault-indicator i {
   font-size: 0.8rem;
 }
+
+/* BASE Vault — locked-only filter */
+
+.base-filter-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.2rem 0.35rem;
+}
+
+.base-toggle-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  color: var(--text-muted-color);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.base-toggle-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.base-toggle-track {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 20px;
+  background: var(--main-border-color, #596574);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.base-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.base-toggle-input:checked + .base-toggle-track {
+  background: #27956b;
+}
+
+.base-toggle-input:checked + .base-toggle-track::after {
+  transform: translateX(16px);
+}
+
+.base-toggle-input:focus-visible + .base-toggle-track {
+  outline: 2px solid var(--link-color);
+  outline-offset: 3px;
+}
