@@ -172,6 +172,7 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 }
 
 
+
 /* ========================================
    BASE Vault — Compact Neutral Toggle
    ======================================== */
@@ -202,9 +203,10 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   padding: 3px;
   margin: 0;
 
-  border: 1px solid #c5c7cb;
+  color: var(--text-color);
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
   border-radius: 999px;
-  background: #ebedf0;
+  background: color-mix(in srgb, currentColor 10%, transparent);
   cursor: pointer;
 
   transition: background .2s ease, border-color .2s ease;
@@ -221,53 +223,29 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   flex: 0 0 18px;
 
   border-radius: 50%;
-  background: #fff;
-  color: #555b63;
+  background: color-mix(in srgb, currentColor 24%, var(--main-bg));
+  color: var(--text-color);
 
-  box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .15);
 
   transition:
     transform .22s cubic-bezier(.2, .8, .2, 1),
-    background .2s ease,
-    color .2s ease;
+    background .2s ease;
 }
 
 #home-filter .base-switch-thumb i {
   font-size: 10px;
 }
 
-/* Enabled — neutral only */
+/* Toggle ON — neutral theme colours */
 #home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: #d6d9de;
-  border-color: #91969e;
+  background: color-mix(in srgb, currentColor 20%, transparent);
+  border-color: color-mix(in srgb, currentColor 45%, transparent);
 }
 
 #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
   transform: translateX(20px);
-  background: #555b63;
-  color: #fff;
-}
-
-/* BASE Vault toggle — dark mode */
-
-html[data-mode="dark"] #home-filter .base-vault-switch {
-  background: #303238;
-  border-color: #555861;
-}
-
-html[data-mode="dark"] #home-filter .base-switch-thumb {
-  background: #555861;
-  color: #d1d3d8;
-}
-
-html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: #41444c;
-  border-color: #777b84;
-}
-
-html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  background: #777b84;
-  color: #ffffff;
+  background: color-mix(in srgb, currentColor 38%, var(--main-bg));
 }
 
 /* Keyboard accessibility */
