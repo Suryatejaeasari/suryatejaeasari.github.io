@@ -13,6 +13,12 @@
 - type: linkedin
   icon: 'fab fa-linkedin'   # icons powered by <https://fontawesome.com/>
   url:  'https://www.linkedin.com/in/suryatejaeasari/'                  # Fill with your Linkedin homepage
+
+
+- type: terminal
+  icon: "fas fa-terminal"
+  url: "https://base.easari.com/terminal/"
+  noblank: true
   
 # - type: rss
 #   icon: "fas fa-rss"
