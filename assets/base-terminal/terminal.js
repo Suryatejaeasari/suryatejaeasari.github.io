@@ -79,7 +79,7 @@
     [HOME+'/.operator/fragments/fragment-a.txt']: {type:'file', text:'BASE OPERATOR FRAGMENT\n\nFILE ID   : A\nTIMESTAMP : 2026-10-17T08:42:00Z\nTOKEN     : SIGNAL\nSTATUS    : RECOVERED'},
     [HOME+'/.operator/fragments/fragment-b.txt']: {type:'file', text:'BASE OPERATOR FRAGMENT\n\nFILE ID   : B\nTIMESTAMP : 2026-10-17T08:39:00Z\nTOKEN     : QUIET\nSTATUS    : RECOVERED'}
   };
-  const help = [
+const helpLines = [
     'BASE TERMINAL — AVAILABLE COMMANDS','',
     'SYSTEM COMMANDS',
     '  help                 Show available commands',
@@ -106,7 +106,27 @@
     '  cat access-01.key    Retrieve your unique access code',
     '  vault                List locked articles and their blog URLs','',
     'Use man <command> for more information.'
-  ].join('\n');
+  ];
+
+function formatHelp() {
+  // Preserve the original column layout on desktop.
+  if (!window.matchMedia('(max-width: 600px)').matches) {
+    return helpLines.join('\n');
+  }
+
+  // Mobile: put command descriptions on separate lines.
+  return helpLines.map(line => {
+    if (!line.startsWith('  ')) return line;
+
+    const match = line.match(/^ {2}(.+?) {2,}(.+)$/);
+
+    if (!match) return line;
+
+    const [, command, description] = match;
+
+    return `  ${command}\n      ${description}\n`;
+  }).join('\n');
+}
   const available = ['help','ls','cd','pwd','cat','base64','clear','history','whoami','date','echo','man','neofetch','exit','challenge','vault','sudo'];
   const manuals = {
     help: ['Show categorized available commands.', 'Usage: help'],
@@ -157,7 +177,7 @@
     return 'Usage: challenge list | challenge start CH-001 | challenge hint CH-001 | challenge submit CH-001 <phrase>';
   }
   async function execute(raw){const args=(raw.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g)||[]).map(v=>v.replace(/^(['"])(.*)\1$/,'$2'));const [c,...rest]=args;const cmd=(c||'').toLowerCase(), first=rest[0];switch(cmd){
-    case 'help':return help;
+    case 'help':return formatHelp();
     case 'ls':return listing(rest.find(x=>!x.startsWith('-'))||'.',rest.some(x=>x.startsWith('-')&&x.includes('a')));
     case 'pwd':return cwd;
     case 'cd':{const dest=normalize(first||HOME), e=filesystem[dest];if(!e)return `cd: ${first}: No such directory`;if(e.type!=='dir')return `cd: ${first}: Not a directory`;cwd=dest;updatePrompt();return '';}
