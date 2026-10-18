@@ -255,3 +255,41 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
     transition: none;
   }
 }
+
+
+/* BASE Vault — production toggle fix */
+
+#home-filter .base-vault-switch {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  width: 64px;
+  height: 34px;
+  padding: 4px;
+  border: 1px solid var(--hf-border);
+  border-radius: 999px;
+  background: var(--hf-bg);
+  cursor: pointer;
+}
+
+#home-filter .base-switch-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border-radius: 50%;
+  background: var(--hf-active-bg);
+  color: var(--hf-text);
+  transition: transform 220ms ease;
+}
+
+#home-filter .base-toggle-input:checked + .base-vault-switch {
+  background: var(--hf-active-bg);
+  border-color: var(--hf-active-border);
+}
+
+#home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
+  transform: translateX(30px);
+}
