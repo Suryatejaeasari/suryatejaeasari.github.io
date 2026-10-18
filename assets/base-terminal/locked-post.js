@@ -20,7 +20,7 @@
     content = replacement;
   }
   content.classList.add('post-content');
-  console.info('BASE slug-only locked post v7 loaded', slug);
+  console.info('BASE protected HTML reader v8 loaded', slug);
   const button = form.querySelector('button');
   const gate = document.getElementById('base-vault-gate');
   const article = document.getElementById('base-unlocked-article');
@@ -96,18 +96,53 @@
     }
     return root;
   }
-  async function fetchContent() {
-    return fetch(`${endpoint}/content?attempt=${crypto.randomUUID()}`, {
-      credentials:'include', cache:'no-store', headers:{Accept:'text/plain'}
+  // HTML is pre-rendered and sanitized in the private publisher. Apply a second
+  // restrictive allowlist in the browser before inserting it into the article.
+  function safeHtml(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const allowed = new Set('A ABBR B BLOCKQUOTE BR CODE DEL DIV EM FIGCAPTION FIGURE H1 H2 H3 H4 H5 H6 HR I IMG INPUT KBD LI OL P PRE S SAMP SMALL SOURCE SPAN STRONG SUB SUP TABLE TBODY TD TH THEAD TR U UL VIDEO'.split(' '));
+    const allowedAttrs = new Set(['class','id','title','alt','width','height','align','loading','controls','muted','loop','playsinline','preload','type']);
+    function clean(node) {
+      for (const child of Array.from(node.children)) {
+        if (!allowed.has(child.tagName)) { child.replaceWith(document.createTextNode(child.textContent || '')); continue; }
+        for (const attr of Array.from(child.attributes)) {
+          const name = attr.name.toLowerCase(), value = attr.value.trim();
+          if (name === 'href' || name === 'src' || name === 'poster') {
+            const safe = !value.startsWith('//') && !/[\u0000-\u001f]/.test(value) && (/^\/(?!\/)/.test(value) || /^https?:\/\//i.test(value));
+            if (!safe) child.removeAttribute(attr.name);
+          } else if (!allowedAttrs.has(name) || (name === 'class' && !/^[a-zA-Z0-9_ +\-]*$/.test(value)) || (name === 'id' && !/^[A-Za-z][A-Za-z0-9_\-:.]*$/.test(value))) child.removeAttribute(attr.name);
+        }
+        if (child.tagName === 'A') child.rel = 'noopener noreferrer';
+        if (child.tagName === 'INPUT') child.disabled = true;
+        clean(child);
+      }
+    }
+    clean(doc.body);
+    const fragment = document.createDocumentFragment();
+    while (doc.body.firstChild) fragment.append(doc.body.firstChild);
+    return fragment;
+  }
+  async function fetchProtected(kind) {
+    return fetch(`${endpoint}/${kind}?attempt=${crypto.randomUUID()}`, {
+      credentials:'include', cache:'no-store', headers:{Accept:kind==='html'?'text/html':'text/plain'}
     });
   }
   async function readContent(afterUnlock = false) {
-    let response = await fetchContent();
-    if (afterUnlock && response.status === 403) response = await fetchContent();
+    let response;
+    let kind = 'html';
+    try { response = await fetchProtected('html'); }
+    catch { response = null; }
+    if (afterUnlock && response?.status === 403) response = await fetchProtected('html');
+    // Never bypass authorization errors by using the Markdown fallback.
+    if (!response || response.status === 404 || response.status >= 500) {
+      kind = 'content';
+      response = await fetchProtected('content');
+      if (afterUnlock && response.status === 403) response = await fetchProtected('content');
+    }
     if (response.ok) {
-      const markdown = await response.text();
-      const rendered = renderMarkdown(markdown);
-      // The public page owns the title: avoid repeating the document's first H1.
+      const data = await response.text();
+      const rendered = kind === 'html' ? safeHtml(data) : renderMarkdown(data);
+      // The public metadata supplies the article title already.
       const first = rendered.firstElementChild;
       if (first?.tagName === 'H1' && first.textContent.trim() === article.querySelector('h1')?.textContent.trim()) first.remove();
       content.replaceChildren(rendered);
