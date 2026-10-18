@@ -54,7 +54,7 @@
     return `BASE ACCESS CERTIFICATE\n------------------------------\nChallenge : ${data.challenge_id}\nStatus    : ${data.status.toUpperCase()}\n\nSECRET: ${data.secret}\n------------------------------\nUse this personal code on a locked article page on BASE.`;
   }
   async function vaultCatalog() {
-    const data = await api('/articles');
+    const data = await api('/vault');
     const entries = data.articles || [];
     return entries.length ? 'BASE VAULT — LOCKED ARTICLES\n' + entries.map(a=>`  ${a.title} [${a.challenge_id}] — /posts/${a.slug}/`).join('\n') : 'No protected articles are published.';
   }
