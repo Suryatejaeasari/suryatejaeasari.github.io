@@ -14,8 +14,6 @@
 
 .base-locked-page[hidden],#base-unlocked-article[hidden],#base-protected-content[hidden],#base-vault-gate[hidden]{display:none!important}
 
-/* Restore a functional copy button inside Chirpy's own code header. */
-#base-protected-content .code-header .base-native-copy{margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;border:0;background:transparent;color:inherit;cursor:pointer}
-#base-protected-content .code-header .base-native-copy:hover{opacity:.75}
-#base-protected-content .code-header .base-native-copy:focus-visible{outline:2px solid currentColor;outline-offset:2px;border-radius:4px}
-#base-protected-content .code-header .base-native-copy i{font-size:1rem}
+/* Keep the native Chirpy code header and its own layout; no secondary toolbar. */
+#base-protected-content .code-header button.base-native-copy{cursor:pointer}
+#base-protected-content .code-header button.base-native-copy:focus-visible{outline:2px solid currentColor;outline-offset:2px}

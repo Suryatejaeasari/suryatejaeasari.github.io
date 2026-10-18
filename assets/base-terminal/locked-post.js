@@ -29,8 +29,8 @@
   // restrictive allowlist in the browser before inserting it into the article.
   function safeHtml(html) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    const allowed = new Set('A ABBR B BLOCKQUOTE BR CODE DEL DIV EM FIGCAPTION FIGURE H1 H2 H3 H4 H5 H6 HR I IMG INPUT KBD LI OL P PRE S SAMP SMALL SOURCE SPAN STRONG SUB SUP TABLE TBODY TD TH THEAD TR U UL VIDEO'.split(' '));
-    const allowedAttrs = new Set(['class','id','title','alt','width','height','align','loading','controls','muted','loop','playsinline','preload','type']);
+    const allowed = new Set('A ABBR B BLOCKQUOTE BR CODE DEL DIV EM FIGCAPTION FIGURE BUTTON H1 H2 H3 H4 H5 H6 HR I IMG INPUT KBD LI OL P PRE S SAMP SMALL SOURCE SPAN STRONG SUB SUP TABLE TBODY TD TH THEAD TR U UL VIDEO'.split(' '));
+    const allowedAttrs = new Set(['class','id','title','alt','width','height','align','loading','controls','muted','loop','playsinline','preload','type','aria-label','aria-hidden','role','data-lang','disabled']);
     function clean(node) {
       for (const child of Array.from(node.children)) {
         if (!allowed.has(child.tagName)) { child.replaceWith(document.createTextNode(child.textContent || '')); continue; }
@@ -39,10 +39,18 @@
           if (name === 'href' || name === 'src' || name === 'poster') {
             const safe = !value.startsWith('//') && !/[\u0000-\u001f]/.test(value) && (/^\/(?!\/)/.test(value) || /^https?:\/\//i.test(value));
             if (!safe) child.removeAttribute(attr.name);
-          } else if (!allowedAttrs.has(name) || (name === 'class' && !/^[a-zA-Z0-9_ +\-]*$/.test(value)) || (name === 'id' && !/^[A-Za-z][A-Za-z0-9_\-:.]*$/.test(value))) child.removeAttribute(attr.name);
+          } else if (!allowedAttrs.has(name) ||
+            (name === 'class' && !/^[a-zA-Z0-9_ :.+-]*$/.test(value)) ||
+            (name === 'id' && !/^[A-Za-z][A-Za-z0-9_\-:.]*$/.test(value)) ||
+            (name === 'data-lang' && !(child.matches('div,span') && /^[A-Za-z0-9_+.#-]{1,40}$/.test(value))) ||
+            (name === 'type' && !((child.tagName === 'BUTTON' && value === 'button') || (child.tagName === 'SOURCE' && ['video/mp4','video/webm','image/webp','image/png','image/jpeg'].includes(value)))) ||
+            (name === 'disabled' && child.tagName !== 'BUTTON')) child.removeAttribute(attr.name);
         }
         if (child.tagName === 'A') child.rel = 'noopener noreferrer';
         if (child.tagName === 'INPUT') child.disabled = true;
+        // Only native Chirpy code-header buttons are allowed in the article.
+        if (child.tagName === 'BUTTON' && !child.closest('.code-header')) { child.replaceWith(document.createTextNode(child.textContent || '')); continue; }
+        if (child.tagName === 'BUTTON') child.type = 'button';
         clean(child);
       }
     }
@@ -51,45 +59,30 @@
     while (doc.body.firstChild) fragment.append(doc.body.firstChild);
     return fragment;
   }
-  // The private sanitizer intentionally strips buttons. Restore ONLY the native
-  // Chirpy clipboard control after authorized HTML is inserted (no extra toolbar).
+  // Preserve Chirpy's native header/button. Do not add a second toolbar or icon.
   function enhanceCodeBlocks() {
     for (const header of content.querySelectorAll('.code-header')) {
-      if (header.dataset.baseCopyReady === 'true') continue;
-      const outer = header.parentElement;
-      const source = outer?.querySelector('.rouge-code pre, .rouge-code pre code, .highlight pre, pre code');
-      if (!source) continue;
-
-      // Chirpy may leave a decorative clipboard icon behind when its button is
-      // removed by sanitization. Replace only that orphan, preserving the header.
-      for (const icon of header.querySelectorAll('i.fa-clipboard, i.fa-copy')) {
-        if (!icon.closest('button')) icon.remove();
+      const buttons = [...header.querySelectorAll('button')];
+      if (buttons.length !== 1) {
+        // Fail visibly rather than synthesizing a second control on malformed output.
+        console.warn('BASE Vault: unexpected Chirpy clipboard structure');
+        continue;
       }
-      let button = header.querySelector('button');
-      if (!button) {
-        button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'base-native-copy';
-        button.setAttribute('aria-label', 'Copy code');
-        button.title = 'Copy code';
-        const icon = document.createElement('i');
-        icon.className = 'far fa-clipboard';
-        icon.setAttribute('aria-hidden', 'true');
-        button.append(icon);
-        header.append(button);
-      }
-      header.dataset.baseCopyReady = 'true';
+      const button = buttons[0];
+      button.type = 'button';
+      button.classList.add('base-native-copy');
+      button.setAttribute('aria-label', 'Copy code');
+      button.title = 'Copy code';
     }
   }
 
-  // One handler for the restored native clipboard controls.
+  // Delegated handler for the original, preserved Chirpy button after unlock.
   content.addEventListener('click', async event => {
-    const button = event.target.closest('.code-header .base-native-copy');
+    const button = event.target.closest('.code-header button.base-native-copy');
     if (!button || !content.contains(button)) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     const outer = button.closest('.code-header')?.parentElement;
-    // Prefer Rouge's actual code cell, never the line-number gutter.
     const source = outer?.querySelector('.rouge-code pre, .highlight pre, pre code');
     if (!source) return;
     const text = (source.textContent || '').replace(/\n$/, '');
