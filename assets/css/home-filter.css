@@ -263,9 +263,9 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  width: 64px;
-  height: 34px;
-  padding: 4px;
+   width: 54px;
+  height: 30px;
+  padding: 3px;
   border: 1px solid var(--hf-border);
   border-radius: 999px;
   background: var(--hf-bg);
@@ -276,9 +276,9 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
   border-radius: 50%;
   background: var(--hf-active-bg);
   color: var(--hf-text);
@@ -291,5 +291,9 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 }
 
 #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  transform: translateX(30px);
+  transform: translateX(24px);
+}
+
+#home-filter .base-switch-thumb i {
+  font-size: 11px;
 }
