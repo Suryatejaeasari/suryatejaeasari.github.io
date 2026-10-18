@@ -17,8 +17,9 @@
 
 - type: terminal
   icon: "fas fa-terminal"
-  url: "https://base.easari.com/terminal/"
+  url: "/terminal/"
   noblank: true
+  shortcut: "Ctrl + Alt + T"
   
 # - type: rss
 #   icon: "fas fa-rss"
