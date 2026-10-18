@@ -38,7 +38,7 @@ script_includes:
 
       {% if page.image %}
         {% assign cover_path = page.image.path | default: page.image %}
-        git add _layouts/post.html assets/attachments/{% capture src %}src="{{ cover_path | relative_url }}"{% endcapture %}
+        {% capture src %}src="{{ cover_path | relative_url }}"{% endcapture %}
         {% capture class %}class="preview-img{% if page.image.no_bg %}{{ ' no-bg' }}{% endif %}"{% endcapture %}
         {% capture alt %}alt="{{ page.image.alt | xml_escape | default: "Preview Image" }}"{% endcapture %}
 
