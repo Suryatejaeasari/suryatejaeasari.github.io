@@ -5,7 +5,7 @@
   if (!page) return;
   const slug = page.dataset.slug || '';
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return;
-  const endpoint = `${API}/articles/${encodeURIComponent(slug)}`;
+  const endpoint = `${API}/vault/${encodeURIComponent(slug)}`;
   const status = document.getElementById('base-access-status');
   const form = document.getElementById('base-unlock-form');
   const code = document.getElementById('base-access-code');
@@ -20,7 +20,7 @@
     content = replacement;
   }
   content.classList.add('post-content');
-  console.info('BASE protected HTML reader v8 loaded', slug);
+  console.info('BASE vault reader cutover loaded', slug);
   const button = form.querySelector('button');
   const gate = document.getElementById('base-vault-gate');
   const article = document.getElementById('base-unlocked-article');
