@@ -1,12 +1,10 @@
 ---
-title: BASE Vault Automation Test
+title: My New Writeup
 date: 2026-10-18 05:00:00 +0530
 categories:
-- Projects
+- Cybersecurity
 tags:
-- base-vault
-- automation
-description: Testing automatic protected article publishing.
+- writeup
 layout: locked-post
 access: locked
 slug: automation-test
