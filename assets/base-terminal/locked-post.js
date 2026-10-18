@@ -144,6 +144,46 @@
     }
   }, true);
 
+  // Native Chirpy HTML is sanitized before delivery, so interactive copy buttons
+  // must be attached only after an authorized article has been inserted.
+  function enhanceCodeBlocks() {
+    const blocks = [...content.querySelectorAll('pre')].filter(pre =>
+      !pre.closest('.rouge-gutter, .base-copy-block')
+    );
+    for (const pre of blocks) {
+      // Rouge can render a table with a line-number gutter. Copy code only.
+      const source = pre.closest('.rouge-code')?.querySelector('pre') ||
+        pre.querySelector('code') || pre;
+      const outer = pre.closest('.highlighter-rouge') ||
+        pre.closest('.highlight') || pre;
+      if (outer.closest('.base-copy-block')) continue;
+      const block = document.createElement('div');
+      block.className = 'base-copy-block';
+      const toolbar = document.createElement('div');
+      toolbar.className = 'base-copy-toolbar';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'base-copy-button';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code block');
+      button.addEventListener('click', async () => {
+        const text = (source.textContent || '').replace(/\n$/, '');
+        if (!text) return;
+        try {
+          await navigator.clipboard.writeText(text);
+          button.textContent = 'Copied';
+          button.setAttribute('aria-label', 'Code copied');
+        } catch {
+          button.textContent = 'Copy unavailable';
+          button.setAttribute('aria-label', 'Clipboard permission unavailable');
+        }
+      });
+      toolbar.append(button);
+      outer.parentNode.insertBefore(block, outer);
+      block.append(toolbar, outer);
+    }
+  }
+
   async function fetchProtected(kind) {
     return fetch(`${endpoint}/${kind}?attempt=${crypto.randomUUID()}`, {
       credentials:'include', cache:'no-store', headers:{Accept:kind==='html'?'text/html':'text/plain'}
@@ -168,6 +208,7 @@
       const first = rendered.firstElementChild;
       if (first?.tagName === 'H1' && first.textContent.trim() === document.querySelector('article header h1')?.textContent.trim()) first.remove();
       content.replaceChildren(rendered);
+      if (kind === 'html') enhanceCodeBlocks();
       // Chirpy's static initializer ran before the authorized HTML was fetched.
       // A delegated handler below enables clipboard buttons for inserted blocks.
       content.hidden = false;
