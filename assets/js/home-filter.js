@@ -41,6 +41,9 @@
     if (h === "projects") return "cat:projects";
     if (h === "publications") return "type:publication";
     if (h === "case studies") return "type:case-study";
+    if (filter === 'access:locked') {
+  return card.dataset.access === 'locked';
+}
     return "all";
   };
 

@@ -75,13 +75,22 @@ layout: default
           aria-pressed="false">
     Notes
   </button>
+  <button class="btn btn-sm btn-outline-primary"
+        data-filter="access:locked"
+        aria-pressed="false">
+  <i class="fas fa-lock me-1" aria-hidden="true"></i>
+  Locked
+</button>
 </div>
 
 
 
 <div id="post-list" class="flex-grow-1 px-xl-1">
   {% for post in posts %}
-    <article class="card-wrapper card" data-cats="{{ post.categories | join: ' ' | downcase }}" data-type="{% if post.type %}{{ post.type | join: ' ' | downcase }}{% else %}{% endif %}">
+    <article class="card-wrapper card"
+         data-cats="{{ post.categories | join: ' ' | downcase }}"
+         data-type="{{ post.type | join: ' ' | downcase }}"
+         data-access="{{ post.access | default: 'public' | downcase }}">
       <a href="{{ post.url | relative_url }}" class="post-preview row g-0 flex-md-row-reverse">
         {% assign card_body_col = '12' %}
 
@@ -180,5 +189,5 @@ layout: default
 {% if paginator.total_pages > 1 %}
   {% include post-paginator.html %}
 {% endif %}
-<script src="{{ '/assets/js/home-filter.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/home-filter.js' | relative_url }}?v=2"></script>
 <script src="{{ '/assets/js/base-vault-indicators.js' | relative_url }}?v=1" defer></script>
