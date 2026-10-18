@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=9' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=12' | relative_url }}">
 
 {% include lang.html %}
 
@@ -76,22 +76,26 @@ layout: default
           aria-pressed="false">
     Notes
   </button>
-  <div class="base-filter-toggle ms-auto"
-     title="Show locked articles only">
+  <div class="base-filter-toggle ms-auto">
 
-  <label for="base-locked-only" class="base-toggle-label">
-    <i class="fas fa-lock" aria-hidden="true"></i>
-    <span class="visually-hidden">Show locked articles only</span>
+  <input
+    type="checkbox"
+    id="base-locked-only"
+    class="base-toggle-input"
+    role="switch"
+    aria-label="Show locked articles only"
+  >
+
+  <label
+    for="base-locked-only"
+    class="base-vault-switch"
+    title="Show locked articles only"
+  >
+    <span class="base-switch-thumb">
+      <i class="fas fa-lock" aria-hidden="true"></i>
+    </span>
   </label>
 
-  <input type="checkbox"
-         id="base-locked-only"
-         class="base-toggle-input"
-         role="switch">
-
-  <label for="base-locked-only"
-         class="base-toggle-track"
-         aria-hidden="true"></label>
 </div>
 </div>
 
@@ -201,5 +205,5 @@ layout: default
 {% if paginator.total_pages > 1 %}
   {% include post-paginator.html %}
 {% endif %}
-<script src="{{ '/assets/js/home-filter.js' | relative_url }}?v=4"></script>
+<script src="{{ '/assets/js/home-filter.js' | relative_url }}?v=6"></script>
 <script src="{{ '/assets/js/base-vault-indicators.js' | relative_url }}?v=1" defer></script>
