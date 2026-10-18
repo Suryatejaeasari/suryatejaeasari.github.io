@@ -5,6 +5,7 @@
   const form = document.querySelector('#command-form');
   const input = document.querySelector('#command-input');
   const prompt = document.querySelector('#prompt');
+  const mobileKeys = document.querySelector('.mobile-keys');
   if (!screen || !form || !input || !prompt) return;
   const HOME = '/home/user';
   let cwd = HOME, historyCursor = 0, started = false, hintLevel = 0;
@@ -145,7 +146,7 @@
   function normalize(path='.') {if(path==='~'||path.startsWith('~/'))path=HOME+path.slice(1);const parts=path.startsWith('/')?[]:cwd.split('/').filter(Boolean);for(const segment of path.split('/')){if(!segment||segment==='.')continue;if(segment==='..')parts.pop();else parts.push(segment);}return '/'+parts.join('/');}
   function here(){return cwd===HOME?'~':cwd.startsWith(HOME+'/')?'~'+cwd.slice(HOME.length):cwd;}
   function updatePrompt(){prompt.textContent= rootMode ? `root@base:${here()}#` : `${role}@base:${here()}$`;}
-  function setSudoPrompt(active){sudoPending=active;input.type=active?'password':'text';input.autocomplete='off';input.value='';prompt.textContent=active?'[sudo] password:':(rootMode?`root@base:${here()}#`:`${role}@base:${here()}$`);}
+  function setSudoPrompt(active){sudoPending=active;mobileKeys?.querySelectorAll('[data-mobile-key=up],[data-mobile-key=down],[data-mobile-key=tab]').forEach(b=>b.disabled=active);input.type=active?'password':'text';input.autocomplete='off';input.value='';prompt.textContent=active?'[sudo] password:':(rootMode?`root@base:${here()}#`:`${role}@base:${here()}$`);}
   function get(path){return filesystem[normalize(path)];}
   function listing(path, all){const e=get(path);if(!e)return `ls: cannot access '${path}': No such file or directory`;if(e.type==='file')return path;return (all?['.','..',...e.children]:e.children.filter(x=>!x.startsWith('.'))).join('  ')||'(empty)';}
   function decodeFile(path) {if(!path)return 'Usage: base64 -d <file>';const f=get(path);if(!f)return `base64: ${path}: No such file`;if(f.type!=='file')return `base64: ${path}: Is a directory`;const encoded=f.text.split(/\s+/).find(x=>x.length>30&&/^[A-Za-z0-9+/]+={0,2}$/.test(x));if(!encoded)return 'base64: no encoded payload found';try{return atob(encoded)}catch{return 'base64: invalid encoded payload'}}
@@ -258,7 +259,44 @@
       e.preventDefault(); [...screen.children].forEach(n => { if (n !== form) n.remove(); });
     }
   });
-  document.querySelector('.shell').addEventListener('click',e=>{if(!e.target.closest('a,input'))input.focus()});
+  // Touch controls reuse the existing command history, completion and submission logic.
+  mobileKeys?.addEventListener('click', e => {
+    const button = e.target.closest('button[data-mobile-key]');
+    if (!button || button.disabled || busy) return;
+    const key = button.dataset.mobileKey;
+    if (key === 'up' && !sudoPending) {
+      historyCursor = Math.max(0, historyCursor - 1);
+      input.value = history[historyCursor] || '';
+    } else if (key === 'down' && !sudoPending) {
+      historyCursor = Math.min(history.length, historyCursor + 1);
+      input.value = history[historyCursor] || '';
+    } else if (key === 'tab' && !sudoPending) {
+      completeInput();
+    } else if (key === 'enter') {
+      form.requestSubmit();
+    } else if (key === 'focus') {
+      input.focus({preventScroll:true});
+    }
+    if (key !== 'enter') {
+      input.focus({preventScroll:true});
+      screen.scrollTop = screen.scrollHeight;
+    }
+  });
+  // A mobile software keyboard changes the *visual* viewport; resize only on small screens.
+  function syncMobileViewport() {
+    if (window.matchMedia('(max-width:600px)').matches && window.visualViewport) {
+      document.documentElement.style.setProperty('--base-viewport-height', `${window.visualViewport.height}px`);
+      screen.scrollTop = screen.scrollHeight;
+    } else {
+      document.documentElement.style.removeProperty('--base-viewport-height');
+    }
+  }
+  window.visualViewport?.addEventListener('resize', syncMobileViewport);
+  window.addEventListener('resize', syncMobileViewport);
+  input.addEventListener('focus', () => { if (window.matchMedia('(max-width:600px)').matches) requestAnimationFrame(() => { screen.scrollTop = screen.scrollHeight; }); });
+  syncMobileViewport();
+  document.querySelector('.shell').addEventListener('click',e=>{if(!e.target.closest('a,input,button,label'))input.focus()});
+  if (window.matchMedia('(min-width:601px)').matches) input.focus({preventScroll:true});
   updatePrompt();
   initSession();
 })();

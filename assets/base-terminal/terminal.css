@@ -25,3 +25,30 @@ body{background:var(--bg);font:15px/1.6 ui-monospace,SFMono-Regular,Consolas,mon
 
 /* Responsive spaced-out wordmark */
 @media(max-width:600px){.brand-word{letter-spacing:.095em}.brand-cursor{margin-left:-.08em;margin-bottom:.15em}}
+
+/* Mobile terminal: use available viewport, preserve desktop appearance. */
+.shell{height:var(--base-viewport-height,100dvh)}
+.shell-screen{overscroll-behavior:contain;scroll-padding-bottom:4.5rem;-webkit-overflow-scrolling:touch}
+#command-form{position:sticky;bottom:0;z-index:2;background:var(--panel);padding:8px 0 5px;align-items:center}
+#command-input{font-size:16px;line-height:1.5;width:100%}
+.mobile-keys{display:none}
+@media(max-width:600px){
+  .shell{min-height:0}
+  .shell-head{flex-shrink:0;padding:calc(9px + env(safe-area-inset-top,0px)) 12px 9px}
+  .shell-foot{flex-shrink:0;padding:7px 12px calc(7px + env(safe-area-inset-bottom,0px));font-size:9px}
+  .shell-screen{padding:16px 12px 10px;font-size:13px;line-height:1.6}
+  .brand-lockup{max-width:100%;margin-bottom:18px}
+  .banner{font-size:clamp(42px,14vw,76px)}
+  .brand-word{letter-spacing:.075em}
+  .tagline{font-size:9px;letter-spacing:.12em}
+  #command-form{gap:7px;flex-wrap:wrap;margin-top:12px;font-size:14px;min-height:44px}
+  #prompt{font-size:12px;max-width:100%;overflow-wrap:anywhere;white-space:normal}
+  #command-input{flex:1 1 105px;min-width:95px;font-size:16px}
+  .output{white-space:pre-wrap;overflow-wrap:anywhere}
+  .mobile-keys{display:flex;flex-shrink:0;gap:5px;padding:7px 10px;background:#111e29;border-top:1px solid var(--line)}
+  .mobile-keys button{appearance:none;min-width:0;min-height:40px;flex:1;border:1px solid #34475a;border-radius:7px;background:#172734;color:var(--text);font:600 13px/1 ui-monospace,SFMono-Regular,Consolas,monospace;touch-action:manipulation}
+  .mobile-keys button:active{background:#294254}
+  .mobile-keys button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+  .mobile-keys button:disabled{opacity:.38}
+}
+@media(max-width:350px){.shell-head{font-size:10px}.shell-screen{padding-inline:9px}.mobile-keys{padding-inline:6px;gap:4px}.mobile-keys button{font-size:12px}}

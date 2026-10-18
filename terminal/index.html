@@ -18,8 +18,8 @@ title: BASE Terminal
 >
 
   <title>BASE Terminal | {{ site.title | escape }}</title>
-  <link rel="stylesheet" href="{{ '/assets/base-terminal/terminal.css' | relative_url }}">
-  <script defer src="{{ '/assets/base-terminal/terminal.js?v=7' | relative_url }}"></script>
+  <link rel="stylesheet" href="{{ '/assets/base-terminal/terminal.css?v=8' | relative_url }}">
+  <script defer src="{{ '/assets/base-terminal/terminal.js?v=8' | relative_url }}"></script>
 </head>
 <body>
   <main class="shell" aria-label="BASE simulated terminal">
@@ -38,9 +38,16 @@ title: BASE Terminal
       <p>Welcome, user. Type <strong>help</strong> to explore.</p>
       <form id="command-form" autocomplete="off">
         <label for="command-input" id="prompt">user@base:~$</label>
-        <input id="command-input" type="text" name="command" aria-label="Terminal command" spellcheck="false" autocapitalize="off" autocomplete="off" autofocus>
+        <input id="command-input" type="text" name="command" aria-label="Terminal command" spellcheck="false" autocapitalize="off" autocomplete="off" enterkeyhint="go">
       </form>
     </div>
+    <nav class="mobile-keys" aria-label="Mobile terminal keys">
+      <button type="button" data-mobile-key="up" aria-label="Previous command">↑</button>
+      <button type="button" data-mobile-key="down" aria-label="Next command">↓</button>
+      <button type="button" data-mobile-key="tab" aria-label="Autocomplete">Tab</button>
+      <button type="button" data-mobile-key="enter" aria-label="Run command">Enter ↵</button>
+      <button type="button" data-mobile-key="focus" aria-label="Open keyboard">⌨</button>
+    </nav>
     <footer class="shell-foot"><span>SIMULATED ENVIRONMENT · NO REAL SYSTEM ACCESS</span><span id="hint">↑↓ history · Tab autocomplete</span></footer>
   </main>
 </body>
