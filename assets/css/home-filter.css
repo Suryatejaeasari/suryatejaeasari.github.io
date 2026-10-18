@@ -157,8 +157,8 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   background: transparent;
 
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: 0.9rem;
-  font-weight: 700;
+  font-size: 0.82rem;
+  font-weight: 600;
   letter-spacing: 0.035em;
   line-height: 1.5;
   white-space: nowrap;
@@ -167,5 +167,5 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 }
 
 .base-vault-indicator i {
-  font-size: 0.9rem;
+  font-size: 0.82rem;
 }
