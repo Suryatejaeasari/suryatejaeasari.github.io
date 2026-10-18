@@ -13,7 +13,7 @@ tags:
 description: Detailed implementation steps for the browser terminal, challenge integration,
   owner authentication, Cloudflare API and private Chirpy publishing.
 image:
-  path: /assets/attachments/base-terminal-cover.png
+  path: /assets/attachments/base-terminal-cover-2.png
 reading_minutes: 16
 layout: locked-post
 access: locked
