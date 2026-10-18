@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=2' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=3' | relative_url }}">
 
 {% include lang.html %}
 
@@ -149,6 +149,15 @@ layout: default
                     {% endfor %}
                   </span>
                 {% endif %}
+                {% if post.access == 'locked' %}
+                <span class="base-vault-indicator ms-3"
+                      data-vault-slug="{{ post.slug | escape }}"
+                      aria-label="Protected article"
+                      title="BASE Vault protected article">
+                  <i class="fas fa-lock fa-fw" aria-hidden="true"></i>
+                  <span class="base-vault-label">LOCKED</span>
+                </span>
+              {% endif %}
               </div>
 
               {% if post.pin %}
@@ -172,3 +181,4 @@ layout: default
   {% include post-paginator.html %}
 {% endif %}
 <script src="{{ '/assets/js/home-filter.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/base-vault-indicators.js' | relative_url }}?v=1" defer></script>
