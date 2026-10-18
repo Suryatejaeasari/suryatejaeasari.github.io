@@ -171,10 +171,10 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   font-size: 0.8rem;
 }
 
-/* BASE Vault — locked-only filter */
 
-
-/* BASE Vault — neutral sliding toggle */
+/* ========================================
+   BASE Vault — Compact Neutral Toggle
+   ======================================== */
 
 #home-filter .base-filter-toggle {
   display: inline-flex;
@@ -190,60 +190,86 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   opacity: 0;
 }
 
+/* Switch track */
 #home-filter .base-vault-switch {
   box-sizing: border-box;
   position: relative;
   display: inline-flex;
   align-items: center;
 
-  width: 64px;
-  height: 34px;
-  padding: 4px;
+  width: 46px;
+  height: 26px;
+  padding: 3px;
   margin: 0;
 
-  border: 1px solid var(--hf-border);
+  border: 1px solid #c5c7cb;
   border-radius: 999px;
-  background: var(--hf-bg);
+  background: #ebedf0;
   cursor: pointer;
 
   transition: background .2s ease, border-color .2s ease;
 }
 
+/* Sliding thumb */
 #home-filter .base-switch-thumb {
   display: flex;
   align-items: center;
   justify-content: center;
 
-  width: 24px;
-  height: 24px;
-  flex: 0 0 24px;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
 
   border-radius: 50%;
-  background: var(--hf-active-bg);
-  color: var(--hf-text);
+  background: #fff;
+  color: #555b63;
 
-  box-shadow: 0 1px 4px rgba(0, 0, 0, .12);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .18);
 
-  transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+  transition:
+    transform .22s cubic-bezier(.2, .8, .2, 1),
+    background .2s ease,
+    color .2s ease;
 }
 
 #home-filter .base-switch-thumb i {
-  font-size: 12px;
+  font-size: 10px;
 }
 
-/* Toggle ON — neutral grey, no green */
+/* Enabled — neutral only */
 #home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: var(--hf-active-bg);
-  border-color: var(--hf-active-border);
+  background: #d6d9de;
+  border-color: #91969e;
 }
 
 #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  transform: translateX(30px);
-  background: var(--hf-text);
-  color: var(--hf-bg);
+  transform: translateX(20px);
+  background: #555b63;
+  color: #fff;
 }
 
-/* Accessibility */
+/* Dark mode — improved contrast */
+html[data-mode="dark"] #home-filter .base-vault-switch {
+  background: #383b42;
+  border-color: #858a94;
+}
+
+html[data-mode="dark"] #home-filter .base-switch-thumb {
+  background: #e1e3e7;
+  color: #272a30;
+}
+
+html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch {
+  background: #626773;
+  border-color: #b7bac2;
+}
+
+html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
+  background: #fff;
+  color: #22252a;
+}
+
+/* Keyboard accessibility */
 #home-filter .base-toggle-input:focus-visible + .base-vault-switch {
   outline: 2px solid currentColor;
   outline-offset: 3px;
@@ -254,91 +280,4 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   #home-filter .base-switch-thumb {
     transition: none;
   }
-}
-
-
-/* BASE Vault — production toggle fix */
-
-#home-filter .base-vault-switch {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-   width: 54px;
-  height: 30px;
-  padding: 3px;
-  border: 1px solid var(--hf-border);
-  border-radius: 999px;
-  background: var(--hf-bg);
-  cursor: pointer;
-}
-
-#home-filter .base-switch-thumb {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  flex: 0 0 22px;
-  border-radius: 50%;
-  background: var(--hf-active-bg);
-  color: var(--hf-text);
-  transition: transform 220ms ease;
-}
-
-#home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: var(--hf-active-bg);
-  border-color: var(--hf-active-border);
-}
-
-#home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  transform: translateX(24px);
-}
-
-#home-filter .base-switch-thumb i {
-  font-size: 11px;
-}
-
-/* Compact BASE Vault toggle */
-
-#home-filter .base-vault-switch {
-  width: 46px;
-  height: 26px;
-  padding: 3px;
-}
-
-#home-filter .base-switch-thumb {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 18px;
-}
-
-#home-filter .base-switch-thumb i {
-  font-size: 10px;
-}
-
-#home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  transform: translateX(20px);
-}
-
-
-/* Better visibility in Chirpy dark mode */
-
-html[data-mode="dark"] #home-filter .base-vault-switch {
-  background: #303238;
-  border-color: #656870;
-}
-
-html[data-mode="dark"] #home-filter .base-switch-thumb {
-  background: #c5c7cc;
-  color: #24262b;
-}
-
-html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: #454850;
-  border-color: #999ca4;
-}
-
-html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  background: #f0f0f2;
-  color: #202126;
 }
