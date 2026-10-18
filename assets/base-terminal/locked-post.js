@@ -25,77 +25,6 @@
   const gate = document.getElementById('base-vault-gate');
   const article = document.getElementById('base-unlocked-article');
 
-  // Safe, dependency-free Markdown subset. Raw HTML is rendered literally.
-  function inline(text, parent) {
-    const pattern = /(`[^`\n]+`|\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\(https?:\/\/[^\s)]+\))/g;
-    let index = 0;
-    for (const m of text.matchAll(pattern)) {
-      parent.append(document.createTextNode(text.slice(index, m.index)));
-      const token = m[0];
-      let node;
-      if (token.startsWith('`')) { node = document.createElement('code'); node.textContent = token.slice(1, -1); }
-      else if (token.startsWith('**')) { node = document.createElement('strong'); node.textContent = token.slice(2, -2); }
-      else if (token.startsWith('*')) { node = document.createElement('em'); node.textContent = token.slice(1, -1); }
-      else {
-        const match = /^\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)$/.exec(token);
-        node = document.createElement('a'); node.textContent = match[1]; node.href = match[2]; node.rel = 'noopener noreferrer';
-      }
-      parent.append(node); index = m.index + token.length;
-    }
-    parent.append(document.createTextNode(text.slice(index)));
-  }
-  function renderMarkdown(markdown) {
-    const root = document.createDocumentFragment();
-    const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
-    const isBreak = line => !line.trim() || /^\s*(?:#{1,6}\s|```|>\s?|[-*+]\s|\d+\.\s|\|)/.test(line) || /^\s*---+\s*$/.test(line);
-    let i = 0;
-    while (i < lines.length) {
-      const line = lines[i];
-      if (!line.trim()) { i++; continue; }
-      const fence = /^\s*```([^`]*)$/.exec(line);
-      if (fence) {
-        const lang = fence[1].trim().split(/\s+/)[0].replace(/[^a-z0-9_+-]/gi, '');
-        const parts = []; i++;
-        while (i < lines.length && !/^\s*```\s*$/.test(lines[i])) parts.push(lines[i++]);
-        if (i < lines.length) i++;
-        const pre = document.createElement('pre'); const c = document.createElement('code');
-        if (lang) c.className = 'language-' + lang;
-        c.textContent = parts.join('\n'); pre.append(c); root.append(pre); continue;
-      }
-      const h = /^\s*(#{1,6})\s+(.+?)\s*#*\s*$/.exec(line);
-      if (h) { const el = document.createElement('h' + h[1].length); inline(h[2], el); root.append(el); i++; continue; }
-      if (/^\s*---+\s*$/.test(line)) { root.append(document.createElement('hr')); i++; continue; }
-      if (/^\s*>\s?/.test(line)) {
-        const q = document.createElement('blockquote'); const p = document.createElement('p');
-        const chunks = []; while (i < lines.length && /^\s*>\s?/.test(lines[i])) chunks.push(lines[i++].replace(/^\s*>\s?/, ''));
-        inline(chunks.join(' '), p); q.append(p); root.append(q); continue;
-      }
-      if (/^\s*\|/.test(line) && i + 1 < lines.length && /^\s*\|?\s*:?-{3,}/.test(lines[i+1])) {
-        const split = s => s.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map(v => v.trim());
-        const headers = split(line); i += 2;
-        const wrap = document.createElement('div'); wrap.className = 'base-table-wrap';
-        const table = document.createElement('table'); const thead = document.createElement('thead'); const tr = document.createElement('tr');
-        for (const val of headers) { const cell = document.createElement('th'); inline(val, cell); tr.append(cell); }
-        thead.append(tr); table.append(thead); const tbody = document.createElement('tbody');
-        while (i < lines.length && /^\s*\|/.test(lines[i])) { const row = document.createElement('tr'); for (const val of split(lines[i++])) { const cell = document.createElement('td'); inline(val, cell); row.append(cell); } tbody.append(row); }
-        table.append(tbody); wrap.append(table); root.append(wrap); continue;
-      }
-      const list = /^\s*([-*+]|\d+\.)\s+(.+)$/.exec(line);
-      if (list) {
-        const numbered = /\d+\./.test(list[1]); const el = document.createElement(numbered ? 'ol' : 'ul');
-        while (i < lines.length) {
-          const m = /^\s*([-*+]|\d+\.)\s+(.+)$/.exec(lines[i]);
-          if (!m || /\d+\./.test(m[1]) !== numbered) break;
-          const li = document.createElement('li'); inline(m[2], li); el.append(li); i++;
-        }
-        root.append(el); continue;
-      }
-      const chunks = [line.trim()]; i++;
-      while (i < lines.length && !isBreak(lines[i])) chunks.push(lines[i++].trim());
-      const p = document.createElement('p'); inline(chunks.join(' '), p); root.append(p);
-    }
-    return root;
-  }
   // HTML is pre-rendered and sanitized in the private publisher. Apply a second
   // restrictive allowlist in the browser before inserting it into the article.
   function safeHtml(html) {
@@ -122,67 +51,58 @@
     while (doc.body.firstChild) fragment.append(doc.body.firstChild);
     return fragment;
   }
-  // Event delegation applies only to dynamically inserted Vault blocks.
-  // Stop the click before any stale static initializer can interfere.
+  // The private sanitizer intentionally strips buttons. Restore ONLY the native
+  // Chirpy clipboard control after authorized HTML is inserted (no extra toolbar).
+  function enhanceCodeBlocks() {
+    for (const header of content.querySelectorAll('.code-header')) {
+      if (header.dataset.baseCopyReady === 'true') continue;
+      const outer = header.parentElement;
+      const source = outer?.querySelector('.rouge-code pre, .rouge-code pre code, .highlight pre, pre code');
+      if (!source) continue;
+
+      // Chirpy may leave a decorative clipboard icon behind when its button is
+      // removed by sanitization. Replace only that orphan, preserving the header.
+      for (const icon of header.querySelectorAll('i.fa-clipboard, i.fa-copy')) {
+        if (!icon.closest('button')) icon.remove();
+      }
+      let button = header.querySelector('button');
+      if (!button) {
+        button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'base-native-copy';
+        button.setAttribute('aria-label', 'Copy code');
+        button.title = 'Copy code';
+        const icon = document.createElement('i');
+        icon.className = 'far fa-clipboard';
+        icon.setAttribute('aria-hidden', 'true');
+        button.append(icon);
+        header.append(button);
+      }
+      header.dataset.baseCopyReady = 'true';
+    }
+  }
+
+  // One handler for the restored native clipboard controls.
   content.addEventListener('click', async event => {
-    const button = event.target.closest('button');
+    const button = event.target.closest('.code-header .base-native-copy');
     if (!button || !content.contains(button)) return;
-    const header = button.closest('.code-header');
-    if (!header) return;
-    event.preventDefault(); event.stopImmediatePropagation();
-    const container = header.parentElement;
-    const code = container?.querySelector('.rouge-code pre, pre code, .highlight pre');
-    if (!code) return;
-    const lines = code.innerText || code.textContent || '';
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const outer = button.closest('.code-header')?.parentElement;
+    // Prefer Rouge's actual code cell, never the line-number gutter.
+    const source = outer?.querySelector('.rouge-code pre, .highlight pre, pre code');
+    if (!source) return;
+    const text = (source.textContent || '').replace(/\n$/, '');
+    if (!text) return;
     try {
-      await navigator.clipboard.writeText(lines.replace(/\n$/, ''));
+      await navigator.clipboard.writeText(text);
       button.setAttribute('aria-label', 'Copied');
       button.title = 'Copied';
     } catch {
       button.setAttribute('aria-label', 'Copy unavailable');
-      button.title = 'Copy unavailable (check browser clipboard permissions)';
+      button.title = 'Copy unavailable (check clipboard permission)';
     }
   }, true);
-
-  // Native Chirpy HTML is sanitized before delivery, so interactive copy buttons
-  // must be attached only after an authorized article has been inserted.
-  function enhanceCodeBlocks() {
-    const blocks = [...content.querySelectorAll('pre')].filter(pre =>
-      !pre.closest('.rouge-gutter, .base-copy-block')
-    );
-    for (const pre of blocks) {
-      // Rouge can render a table with a line-number gutter. Copy code only.
-      const source = pre.closest('.rouge-code')?.querySelector('pre') ||
-        pre.querySelector('code') || pre;
-      const outer = pre.closest('.highlighter-rouge') ||
-        pre.closest('.highlight') || pre;
-      if (outer.closest('.base-copy-block')) continue;
-      const block = document.createElement('div');
-      block.className = 'base-copy-block';
-      const toolbar = document.createElement('div');
-      toolbar.className = 'base-copy-toolbar';
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'base-copy-button';
-      button.textContent = 'Copy';
-      button.setAttribute('aria-label', 'Copy code block');
-      button.addEventListener('click', async () => {
-        const text = (source.textContent || '').replace(/\n$/, '');
-        if (!text) return;
-        try {
-          await navigator.clipboard.writeText(text);
-          button.textContent = 'Copied';
-          button.setAttribute('aria-label', 'Code copied');
-        } catch {
-          button.textContent = 'Copy unavailable';
-          button.setAttribute('aria-label', 'Clipboard permission unavailable');
-        }
-      });
-      toolbar.append(button);
-      outer.parentNode.insertBefore(block, outer);
-      block.append(toolbar, outer);
-    }
-  }
 
   async function fetchProtected(kind) {
     return fetch(`${endpoint}/${kind}?attempt=${crypto.randomUUID()}`, {
@@ -190,27 +110,14 @@
     });
   }
   async function readContent(afterUnlock = false) {
-    let response;
-    let kind = 'html';
-    try { response = await fetchProtected('html'); }
-    catch { response = null; }
-    if (afterUnlock && response?.status === 403) response = await fetchProtected('html');
-    // Never bypass authorization errors by using the Markdown fallback.
-    if (!response || response.status === 404 || response.status >= 500) {
-      kind = 'content';
-      response = await fetchProtected('content');
-      if (afterUnlock && response.status === 403) response = await fetchProtected('content');
-    }
+    let response = await fetchProtected('html');
+    if (afterUnlock && response.status === 403) response = await fetchProtected('html');
     if (response.ok) {
-      const data = await response.text();
-      const rendered = kind === 'html' ? safeHtml(data) : renderMarkdown(data);
-      // The public metadata supplies the article title already.
+      const rendered = safeHtml(await response.text());
       const first = rendered.firstElementChild;
       if (first?.tagName === 'H1' && first.textContent.trim() === document.querySelector('article header h1')?.textContent.trim()) first.remove();
       content.replaceChildren(rendered);
-      if (kind === 'html') enhanceCodeBlocks();
-      // Chirpy's static initializer ran before the authorized HTML was fetched.
-      // A delegated handler below enables clipboard buttons for inserted blocks.
+      enhanceCodeBlocks();
       content.hidden = false;
       gate.hidden = true; article.hidden = false;
       status.classList.remove('base-error'); status.textContent = '';
@@ -222,7 +129,7 @@
     }
     if (response.status === 403 && !afterUnlock) return false;
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.error || `Unable to load protected content (${response.status})`);
+    throw new Error(err.error || `Unable to load protected HTML (${response.status})`);
   }
   async function start() {
     try {
