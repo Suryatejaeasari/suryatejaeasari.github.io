@@ -297,3 +297,48 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
 #home-filter .base-switch-thumb i {
   font-size: 11px;
 }
+
+/* Compact BASE Vault toggle */
+
+#home-filter .base-vault-switch {
+  width: 46px;
+  height: 26px;
+  padding: 3px;
+}
+
+#home-filter .base-switch-thumb {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+#home-filter .base-switch-thumb i {
+  font-size: 10px;
+}
+
+#home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
+  transform: translateX(20px);
+}
+
+
+/* Better visibility in Chirpy dark mode */
+
+html[data-mode="dark"] #home-filter .base-vault-switch {
+  background: #303238;
+  border-color: #656870;
+}
+
+html[data-mode="dark"] #home-filter .base-switch-thumb {
+  background: #c5c7cc;
+  color: #24262b;
+}
+
+html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch {
+  background: #454850;
+  border-color: #999ca4;
+}
+
+html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
+  background: #f0f0f2;
+  color: #202126;
+}
