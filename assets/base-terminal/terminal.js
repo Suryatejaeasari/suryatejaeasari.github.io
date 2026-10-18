@@ -10,7 +10,7 @@
   let cwd = HOME, historyCursor = 0, started = false, hintLevel = 0;
   const history = [];
   const API = 'https://api.base.easari.com';
-  let role = 'user', completed = false, busy = false;
+  let role = 'user', completed = false, busy = false, rootMode = false, sudoPending = false;
   async function api(path, options={}) {
     let response;
     try {
@@ -34,6 +34,7 @@
         if (completed) role = 'challenger';
       }
       if (completed && !filesystem[HOME].children.includes('access-01.key')) filesystem[HOME].children.push('access-01.key');
+      try { const owner=await api('/owner/session'); rootMode=owner.authenticated===true; } catch { rootMode=false; }
       updatePrompt();
       emit('[ OK ] Secure BASE session connected.','ok');
     } catch (error) { emit(`[!] ${error.message} Browser challenge submissions are unavailable.`, 'output warn'); }
@@ -93,7 +94,8 @@
     '  echo <text>          Print text',
     '  man <command>        Command documentation',
     '  neofetch             Show system information',
-    '  exit                 Return to blog','',
+    '  sudo su              Owner authentication',
+    '  exit                 Leave root mode or return to blog','',
     'CHALLENGE COMMANDS',
     '  challenge list       List challenges',
     '  challenge start CH-001   Begin investigation',
@@ -119,14 +121,14 @@
     echo: ['Print text.', 'Usage: echo <text>'],
     man: ['Show a short manual for a command.', 'Usage: man <command> [subcommand]', 'Example: man challenge start'],
     neofetch: ['Display BASE simulated system information.', 'Usage: neofetch'],
-    exit: ['Return to the main blog. Root-mode behavior is planned for later.', 'Usage: exit'],
+    exit: ['Leave root mode, otherwise return to the main blog.', 'Usage: exit'],
     challenge: ['Investigate CH-001. Answers are verified by the BASE API.', 'Usage: challenge <list|start|hint|submit> [id] [phrase]'],
     'challenge list': ['List challenges.', 'Usage: challenge list'],
     'challenge start': ['Start The Forgotten Operator investigation.', 'Usage: challenge start CH-001'],
     'challenge hint': ['Reveal the next hint (three available).', 'Usage: challenge hint CH-001'],
     'challenge submit': ['Submit a phrase for secure verification.', 'Usage: challenge submit CH-001 <phrase>'],
     vault: ['List published protected articles. Open a locked article to use your CH-001 code.', 'Usage: vault'],
-    sudo: ['Reserved for future secure owner authentication. Do not enter real passwords here.', 'Status: not enabled']
+    sudo: ['Authenticate as owner using a masked prompt.', 'Usage: sudo su']
   };
   function manual(args) {
     if (!args.length) return 'Usage: man <command> [subcommand]';
@@ -142,7 +144,8 @@
   function emit(text, cls='output') {if(!text)return;const d=document.createElement('div');d.className=cls;d.textContent=text;screen.insertBefore(d,form);screen.scrollTop=screen.scrollHeight;}
   function normalize(path='.') {if(path==='~'||path.startsWith('~/'))path=HOME+path.slice(1);const parts=path.startsWith('/')?[]:cwd.split('/').filter(Boolean);for(const segment of path.split('/')){if(!segment||segment==='.')continue;if(segment==='..')parts.pop();else parts.push(segment);}return '/'+parts.join('/');}
   function here(){return cwd===HOME?'~':cwd.startsWith(HOME+'/')?'~'+cwd.slice(HOME.length):cwd;}
-  function updatePrompt(){prompt.textContent=`${role}@base:${here()}$`;}
+  function updatePrompt(){prompt.textContent= rootMode ? `root@base:${here()}#` : `${role}@base:${here()}$`;}
+  function setSudoPrompt(active){sudoPending=active;input.type=active?'password':'text';input.autocomplete='off';input.value='';prompt.textContent=active?'[sudo] password:':(rootMode?`root@base:${here()}#`:`${role}@base:${here()}$`);}
   function get(path){return filesystem[normalize(path)];}
   function listing(path, all){const e=get(path);if(!e)return `ls: cannot access '${path}': No such file or directory`;if(e.type==='file')return path;return (all?['.','..',...e.children]:e.children.filter(x=>!x.startsWith('.'))).join('  ')||'(empty)';}
   function decodeFile(path) {if(!path)return 'Usage: base64 -d <file>';const f=get(path);if(!f)return `base64: ${path}: No such file`;if(f.type!=='file')return `base64: ${path}: Is a directory`;const encoded=f.text.split(/\s+/).find(x=>x.length>30&&/^[A-Za-z0-9+/]+={0,2}$/.test(x));if(!encoded)return 'base64: no encoded payload found';try{return atob(encoded)}catch{return 'base64: invalid encoded payload'}}
@@ -161,19 +164,30 @@
     case 'base64':return first==='-d'?decodeFile(rest[1]):'Usage: base64 -d <file>';
     case 'clear':[...screen.children].forEach(n=>{if(n!==form)n.remove()});return '';
     case 'history':return history.map((v,i)=>`${i+1}  ${v}`).join('\n');
-    case 'whoami':return role;
+    case 'whoami':return rootMode?'root':role;
     case 'date':return new Date().toString();
     case 'echo':return rest.join(' ');
     case 'man':return manual(rest);
     case 'neofetch':return `BASE_\nOS: BASE browser simulation\nShell: base-sh 3.0\nRole: ${role}\nHost: base.easari.com`;
     case 'challenge':return challenge(rest);
     case 'vault':return vaultCatalog();
-    case 'sudo':return 'Owner authentication is not enabled. Do not enter passwords in this Phase 2 terminal.';
-    case 'exit':emit('[+] Closing terminal session...\n[+] Returning to BASE.');window.location.assign(document.documentElement.dataset.homeUrl||'/');return '';
+    case 'sudo':{if(rest.length!==1||first!=='su')return 'Usage: sudo su';
+      if(rootMode){try{await api('/owner/session');return 'Already in root mode.';}catch{rootMode=false;updatePrompt();}}
+      setSudoPrompt(true);return '';}
+    case 'exit':{if(rootMode){await api('/owner/logout',{method:'POST'});rootMode=false;updatePrompt();return '[+] Root session ended.';}emit('[+] Closing terminal session...\n[+] Returning to BASE.');window.location.assign(document.documentElement.dataset.homeUrl||'/');return '';}
     default:return `${c}: command not found. Type help.`;
   }}
   form.addEventListener('submit',async e=>{
     e.preventDefault(); if(busy)return;
+    if(sudoPending){
+      const credential=input.value; if(!credential)return;
+      busy=true;input.disabled=true;setSudoPrompt(false);
+      // Never echo, retain, log or add credentials to history.
+      try {const result=await api('/owner/sudo',{method:'POST',body:JSON.stringify({credential})});
+        rootMode=result.authenticated===true;updatePrompt();emit(rootMode?'[+] Root session established.':'Authentication failed.',rootMode?'ok':'output warn');
+      } catch(error){emit(error.message||'Authentication failed.','output warn');}
+      finally{busy=false;input.disabled=false;input.focus();}return;
+    }
     const raw=input.value.trim(); if(!raw)return;
     busy=true; input.disabled=true; input.value='';
     const sensitive=/^unlock\s/i.test(raw);
@@ -233,6 +247,7 @@
     } else if (options.length > 1) emit(options.join('  '));
   }
   input.addEventListener('keydown', e => {
+    if(sudoPending){if(e.key==='Escape'){e.preventDefault();setSudoPrompt(false);}if(['ArrowUp','ArrowDown','Tab'].includes(e.key))e.preventDefault();return;}
     if (e.key === 'ArrowUp') {
       e.preventDefault(); historyCursor = Math.max(0, historyCursor - 1); input.value = history[historyCursor] || '';
     } else if (e.key === 'ArrowDown') {
