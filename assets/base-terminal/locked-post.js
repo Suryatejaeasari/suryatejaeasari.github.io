@@ -97,6 +97,58 @@
     }
   }, true);
 
+  // Chirpy uses GLightbox. Initialize it only after authorized images exist.
+  // If its assets cannot load, original image links remain usable.
+  let vaultLightbox = null;
+  let glightboxLoad = null;
+  function loadGLightbox() {
+    if (typeof window.GLightbox === 'function') return Promise.resolve(window.GLightbox);
+    if (glightboxLoad) return glightboxLoad;
+    glightboxLoad = new Promise((resolve, reject) => {
+      const css = document.createElement('link');
+      css.rel = 'stylesheet';
+      css.href = 'https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/css/glightbox.min.css';
+      document.head.append(css);
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/glightbox@3.3.1/dist/js/glightbox.min.js';
+      script.onload = () => typeof window.GLightbox === 'function'
+        ? resolve(window.GLightbox) : reject(new Error('GLightbox was not initialized'));
+      script.onerror = () => reject(new Error('GLightbox failed to load'));
+      document.head.append(script);
+    });
+    return glightboxLoad;
+  }
+
+  async function enhanceImages() {
+    const anchors = [...content.querySelectorAll('a:has(> img)')];
+    let count = 0;
+    for (const anchor of anchors) {
+      const img = anchor.querySelector(':scope > img');
+      if (!img?.getAttribute('src') || !anchor.getAttribute('href')) continue;
+      // Only link-to-image elements, not ordinary image-bearing navigation links.
+      try {
+        const target = new URL(anchor.href, location.href);
+        const source = new URL(img.src, location.href);
+        if (target.href !== source.href || !['http:', 'https:'].includes(target.protocol)) continue;
+      } catch { continue; }
+      anchor.classList.add('base-vault-popup');
+      if (img.alt) anchor.setAttribute('aria-label', `Enlarge image: ${img.alt}`);
+      count++;
+    }
+    if (!count) return;
+    try {
+      const create = await loadGLightbox();
+      vaultLightbox?.destroy();
+      vaultLightbox = create({
+        selector: '#base-protected-content a.base-vault-popup',
+        touchNavigation: true,
+        loop: false
+      });
+    } catch (error) {
+      console.warn('BASE Vault: image lightbox unavailable; image links remain usable.', error);
+    }
+  }
+
   async function fetchProtected(kind) {
     return fetch(`${endpoint}/${kind}?attempt=${crypto.randomUUID()}`, {
       credentials:'include', cache:'no-store', headers:{Accept:kind==='html'?'text/html':'text/plain'}
@@ -114,6 +166,8 @@
       content.hidden = false;
       gate.hidden = true; article.hidden = false;
       status.classList.remove('base-error'); status.textContent = '';
+      // Run after content insertion; do not delay successful authorization on CDN loading.
+      void enhanceImages();
       return true;
     }
     if (response.status === 401) {
