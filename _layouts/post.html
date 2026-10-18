@@ -92,7 +92,11 @@ script_includes:
           {% endif %}
 
           <!-- read time -->
-          {% include read-time.html content=content prompt=true lang=lang %}
+          {% if page.access == 'locked' and page.reading_minutes %}
+            <span class="readtime">{{ page.reading_minutes | plus: 0 }} min read</span>
+          {% else %}
+            {% include read-time.html content=content prompt=true lang=lang %}
+          {% endif %}
         </div>
       </div>
     </div>

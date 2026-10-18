@@ -122,6 +122,28 @@
     while (doc.body.firstChild) fragment.append(doc.body.firstChild);
     return fragment;
   }
+  // Event delegation applies only to dynamically inserted Vault blocks.
+  // Stop the click before any stale static initializer can interfere.
+  content.addEventListener('click', async event => {
+    const button = event.target.closest('button');
+    if (!button || !content.contains(button)) return;
+    const header = button.closest('.code-header');
+    if (!header) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    const container = header.parentElement;
+    const code = container?.querySelector('.rouge-code pre, pre code, .highlight pre');
+    if (!code) return;
+    const lines = code.innerText || code.textContent || '';
+    try {
+      await navigator.clipboard.writeText(lines.replace(/\n$/, ''));
+      button.setAttribute('aria-label', 'Copied');
+      button.title = 'Copied';
+    } catch {
+      button.setAttribute('aria-label', 'Copy unavailable');
+      button.title = 'Copy unavailable (check browser clipboard permissions)';
+    }
+  }, true);
+
   async function fetchProtected(kind) {
     return fetch(`${endpoint}/${kind}?attempt=${crypto.randomUUID()}`, {
       credentials:'include', cache:'no-store', headers:{Accept:kind==='html'?'text/html':'text/plain'}
@@ -144,8 +166,10 @@
       const rendered = kind === 'html' ? safeHtml(data) : renderMarkdown(data);
       // The public metadata supplies the article title already.
       const first = rendered.firstElementChild;
-      if (first?.tagName === 'H1' && first.textContent.trim() === article.querySelector('h1')?.textContent.trim()) first.remove();
+      if (first?.tagName === 'H1' && first.textContent.trim() === document.querySelector('article header h1')?.textContent.trim()) first.remove();
       content.replaceChildren(rendered);
+      // Chirpy's static initializer ran before the authorized HTML was fetched.
+      // A delegated handler below enables clipboard buttons for inserted blocks.
       content.hidden = false;
       gate.hidden = true; article.hidden = false;
       status.classList.remove('base-error'); status.textContent = '';

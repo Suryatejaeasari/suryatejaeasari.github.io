@@ -1,35 +1,23 @@
 ---
-layout: default
+layout: post
 ---
+<!-- Public shell only. Private body is fetched after BASE Vault authorization. -->
 <div class="base-locked-page" data-slug="{{ page.slug | escape }}">
-  <!-- Public gate only: never include private Markdown in the Jekyll source page. -->
   <section id="base-vault-gate" class="base-vault-gate" aria-live="polite">
     <p class="base-locked-kicker">BASE // SEALED RESOURCE</p>
-    <h1>{{ page.title | escape }}</h1>
-    <p>{{ page.description | escape }}</p>
     <div class="base-locked-panel">
       <p id="base-access-status">Checking access…</p>
       <form id="base-unlock-form" hidden>
         <label for="base-access-code">Access code</label>
         <input id="base-access-code" name="code" type="text" required maxlength="128" autocomplete="off" spellcheck="false" placeholder="BASE-XXXX-XXXX-XXXX">
         <button type="submit">Unlock writeup</button>
-        <p>Complete {{ page.challenge_id | default: "CH-001" | escape }} in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
+        <p>Complete {{ page.challenge_id | default: 'CH-001' | escape }} in the <a href="{{ '/terminal/' | relative_url }}">BASE Terminal</a> and read <code>access-01.key</code> to obtain your personal code.</p>
       </form>
     </div>
   </section>
-  <!-- No protected content is present in public HTML; JS fetches it after authorization. -->
-  <article id="base-unlocked-article" class="base-chirpy-article" hidden>
-    <header class="base-article-header">
-      <h1>{{ page.title | escape }}</h1>
-      <div class="base-article-meta">
-        {% if page.date %}<span>Posted <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: '%b %-d, %Y' }}</time></span>{% endif %}
-        {% if page.last_modified_at %}<span> · Updated <time datetime="{{ page.last_modified_at | date_to_xmlschema }}">{{ page.last_modified_at | date: '%b %-d, %Y' }}</time></span>{% endif %}
-      </div>
-      {% if page.image.path %}<img class="base-article-cover" src="{{ page.image.path | relative_url }}" alt="{{ page.image.alt | default: page.title | escape }}">{% elsif page.image %}{% unless page.image.path %}<img class="base-article-cover" src="{{ page.image | relative_url }}" alt="{{ page.title | escape }}">{% endunless %}{% endif %}
-      {% if page.author %}<p class="base-article-byline">By {{ page.author | escape }}</p>{% endif %}
-    </header>
+  <div id="base-unlocked-article" hidden>
     <div id="base-protected-content" class="post-content" hidden></div>
-  </article>
+  </div>
 </div>
-<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=7">
-<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=11" defer></script>
+<link rel="stylesheet" href="{{ '/assets/base-terminal/locked-post.css' | relative_url }}?v=12">
+<script src="{{ '/assets/base-terminal/locked-post.js' | relative_url }}?v=12" defer></script>
