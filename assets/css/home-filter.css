@@ -248,25 +248,26 @@ html[data-mode="dark"], body[data-mode="dark"], [data-theme="dark"] {
   color: #fff;
 }
 
-/* Dark mode — improved contrast */
+/* BASE Vault toggle — dark mode */
+
 html[data-mode="dark"] #home-filter .base-vault-switch {
-  background: #383b42;
-  border-color: #858a94;
+  background: #303238;
+  border-color: #555861;
 }
 
 html[data-mode="dark"] #home-filter .base-switch-thumb {
-  background: #e1e3e7;
-  color: #272a30;
+  background: #555861;
+  color: #d1d3d8;
 }
 
 html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch {
-  background: #626773;
-  border-color: #b7bac2;
+  background: #41444c;
+  border-color: #777b84;
 }
 
 html[data-mode="dark"] #home-filter .base-toggle-input:checked + .base-vault-switch .base-switch-thumb {
-  background: #fff;
-  color: #22252a;
+  background: #777b84;
+  color: #ffffff;
 }
 
 /* Keyboard accessibility */
