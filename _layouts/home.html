@@ -1,7 +1,7 @@
 ---
 layout: default
 ---
-<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=9' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/css/home-filter.css?v=11' | relative_url }}">
 
 {% include lang.html %}
 
@@ -76,22 +76,24 @@ layout: default
           aria-pressed="false">
     Notes
   </button>
-  <div class="base-filter-toggle ms-auto"
-     title="Show locked articles only">
-
-  <label for="base-locked-only" class="base-toggle-label">
-    <i class="fas fa-lock" aria-hidden="true"></i>
-    <span class="visually-hidden">Show locked articles only</span>
-  </label>
+  <div class="base-filter-toggle ms-auto">
 
   <input type="checkbox"
          id="base-locked-only"
          class="base-toggle-input"
-         role="switch">
+         role="switch"
+         aria-label="Show locked articles only">
 
   <label for="base-locked-only"
-         class="base-toggle-track"
-         aria-hidden="true"></label>
+         class="base-vault-switch"
+         title="Show locked articles only">
+
+    <span class="base-switch-thumb">
+      <i class="fas fa-lock" aria-hidden="true"></i>
+    </span>
+
+  </label>
+
 </div>
 </div>
 
