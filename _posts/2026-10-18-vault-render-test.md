@@ -9,7 +9,6 @@ tags:
 description: Testing native Chirpy rendering and automated attachment publishing.
 image:
   path: /assets/attachments/vault-test-cover.png
-  alt: BASE Vault rendering test cover
 links:
 - label: GitHub
   icon: fab fa-github
